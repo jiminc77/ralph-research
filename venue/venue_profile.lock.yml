@@ -1,0 +1,5 @@
+name: generic-research-report-v1
+engine: latexmk
+template: venue/templates/generic
+page_limit: 8
+citation_style: plain

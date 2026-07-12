@@ -1,0 +1,18 @@
+{
+  "schema_version": "4.1",
+  "name": "PaperFigure Design System (ICRA/ICLR)",
+  "source_type": "user-provided-claude-design-handoff",
+  "archive_filename": "PaperFigure Design System (ICRAICLR)-handoff.zip",
+  "archive_sha256": "d4cb4667d0c014871a0271a107f337bd4be97e0382a06a493f013a19a2909ba6",
+  "file_count": 73,
+  "companion_manifest_filename": "paperfigure-design-system-f8313b.lock.json",
+  "companion_manifest_sha256": "9abc9d7a642567cff4f998e7d975af965f380c40386f27c29de47d5ab9cb1145",
+  "runtime_policy": {
+    "verify_archive_on_setup": true,
+    "verify_each_file_on_every_run": false,
+    "vendor_tree_immutable": true,
+    "write_overrides_only": true,
+    "reference_images_are_style_reference_only": true,
+    "public_redistribution_requires_manual_rights_review": true
+  }
+}

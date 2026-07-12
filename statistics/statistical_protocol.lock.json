@@ -1,0 +1,10 @@
+{
+  "primary_metric": "confirmation_agreement",
+  "direction": "maximize",
+  "minimum_effect": 0.05,
+  "seeds": [11, 23, 37],
+  "aggregate": "mean",
+  "ci": "bootstrap",
+  "selection_rule": "Select the candidate with the highest search_dev mean that satisfies all guards.",
+  "confirmation_rule": "Confirm the selected candidate once on hidden_confirmation without reselection."
+}

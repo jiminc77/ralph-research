@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.research-ralph/schema/worker-result-v4.1.json",
+  "title": "research-ralph Worker Result v4.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "status",
+    "summary",
+    "experiments",
+    "artifacts",
+    "findings",
+    "limitations",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": {"const": "4.1"},
+    "task_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["completed", "failed", "blocked"]},
+    "summary": {"type": "string"},
+    "source_commit": {"type": ["string", "null"]},
+    "experiments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "experiment_id",
+          "purpose",
+          "status",
+          "data_split",
+          "config_hash",
+          "seeds",
+          "aggregate",
+          "guards",
+          "manifest"
+        ],
+        "properties": {
+          "experiment_id": {"type": "string", "minLength": 1},
+          "purpose": {
+            "enum": ["baseline", "search", "ablation", "counterfactual", "reproduction", "confirmation"]
+          },
+          "status": {
+            "enum": [
+              "completed", "valid", "reproduced", "confirmed", "claim_eligible",
+              "invalid_run", "mechanical_failure", "optimization_failure", "valid_null_result", "cancelled"
+            ]
+          },
+          "data_split": {"enum": ["train", "search_dev", "hidden_confirmation", "none"]},
+          "config_hash": {"type": ["string", "null"]},
+          "seeds": {"type": "array", "items": {"type": "integer"}},
+          "aggregate": {"type": "object"},
+          "guards": {"type": "object"},
+          "manifest": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "path", "sha256"],
+        "properties": {
+          "kind": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+        }
+      }
+    },
+    "findings": {"type": "array"},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"enum": ["continue", "retry", "stop", "none"]}
+  }
+}

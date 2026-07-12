@@ -1,0 +1,15 @@
+{
+  "dataset": {
+    "name": "placeholder-benchmark",
+    "version": "0.1",
+    "identity": "placeholder-benchmark@0.1",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "access_status": "local-fixture",
+    "license_status": "placeholder-permissive"
+  },
+  "splits": {
+    "train": "1111111111111111111111111111111111111111111111111111111111111111",
+    "search_dev": "2222222222222222222222222222222222222222222222222222222222222222",
+    "hidden_confirmation": "3333333333333333333333333333333333333333333333333333333333333333"
+  }
+}

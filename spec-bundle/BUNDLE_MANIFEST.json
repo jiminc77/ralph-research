@@ -1,0 +1,50 @@
+{
+  "bundle": "research-ralph-v4.1-lean",
+  "files": [
+    {
+      "path": "README.md",
+      "size_bytes": 655,
+      "sha256": "4cda5f864736c2d962c2d25505e842381eeefe5f007b6e419ab06704220c6055"
+    },
+    {
+      "path": "SHA256SUMS.txt",
+      "size_bytes": 815,
+      "sha256": "828fd7665a9e2e7b7937845216b999e4b159b831c6e15a0e95b6146a4d1f719d"
+    },
+    {
+      "path": "paperfigure/PaperFigure Design System (ICRAICLR)-handoff.zip",
+      "size_bytes": 6200374,
+      "sha256": "d4cb4667d0c014871a0271a107f337bd4be97e0382a06a493f013a19a2909ba6"
+    },
+    {
+      "path": "paperfigure/companion-tree.lock.json",
+      "size_bytes": 17278,
+      "sha256": "9abc9d7a642567cff4f998e7d975af965f380c40386f27c29de47d5ab9cb1145"
+    },
+    {
+      "path": "paperfigure/source.lock.json",
+      "size_bytes": 793,
+      "sha256": "a1fdbccb1f9552bf458dfc466179982d62297170174a57621432283717e73717"
+    },
+    {
+      "path": "research-ralph-implementation-spec-v4.1-lean.md",
+      "size_bytes": 53681,
+      "sha256": "787ec6392c355e29bcc0d20ce9c4f6ae316cde15210ebe85c239c4c627a062c8"
+    },
+    {
+      "path": "schema/core-v4.1-lean.sql",
+      "size_bytes": 6092,
+      "sha256": "744beb63fc6db9a48b4a88cbe9c52788840c0d94b32b60fb42952edf226b7793"
+    },
+    {
+      "path": "schema/worker-result.schema.json",
+      "size_bytes": 2467,
+      "sha256": "b9e81edc96e1c6ff5f936b062bcb82efad9b4ea083874532f6d027e2aca93520"
+    },
+    {
+      "path": "validation/validation.json",
+      "size_bytes": 1765,
+      "sha256": "79ae9e1c4cb13023ba4aeff18b58e0c82cb84dd1b8eb50f5ad88370824e859f6"
+    }
+  ]
+}

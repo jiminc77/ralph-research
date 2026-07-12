@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec uv run --project "$(cd -- "$(dirname -- "$0")" && pwd)" python -m ralph_core.cli "$@"

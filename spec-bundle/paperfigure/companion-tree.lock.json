@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "profile_id": "paperfigure-icra-iclr-f8313b",
+  "source": {
+    "kind": "user_provided_claude_design_handoff",
+    "archive_name": "PaperFigure Design System (ICRAICLR)-handoff.zip",
+    "archive_size_bytes": 6200374,
+    "archive_sha256": "d4cb4667d0c014871a0271a107f337bd4be97e0382a06a493f013a19a2909ba6",
+    "bundle_root": "paperfigure-design-system-icra-iclr"
+  },
+  "tree": {
+    "file_count": 73,
+    "sha256": "48e4ab81c93ae117d7c6412a808117ca11bcc66ae36d60f41ec625feaa685cc5",
+    "algorithm": "sha256(UTF-8 concat of sorted '<file_sha256>  <relative_path>\\n' lines; paths relative to bundle root)",
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "a81b09b520bb6634a70ca6b3b60e12522c1483b744d2e33c9c71163afc83774a",
+        "size_bytes": 1580
+      },
+      {
+        "path": "project/Architecture Figure.html",
+        "sha256": "ab27ca3db6b7243cafd0e9c3287540e47413d40bdb4a94fb3aed5050e4c3878f",
+        "size_bytes": 2255808
+      },
+      {
+        "path": "project/SKILL.md",
+        "sha256": "e53320facec8e487541f35c92131b82d38aa95d73bcc1659ee8e725c06c1d044",
+        "size_bytes": 2502
+      },
+      {
+        "path": "project/_adherence.oxlintrc.json",
+        "sha256": "87a4f960782423f3809eff1e5e2c4c68bfcb04eaaafecec4fe387e225689b443",
+        "size_bytes": 19636
+      },
+      {
+        "path": "project/_ds_bundle.js",
+        "sha256": "885e58e8cb6184a5fb5420a7d2cc158af969884fefcf3748aadf079a67001826",
+        "size_bytes": 43423
+      },
+      {
+        "path": "project/_ds_manifest.json",
+        "sha256": "3634b089d0093f7e9a145c243e97a92a1aa4f707383cc07c44360d05a837921a",
+        "size_bytes": 15330
+      },
+      {
+        "path": "project/assets/reference-figures/ablation_brats_figure.png",
+        "sha256": "76c377db287aabfdf2310e549828ebc4eba48ceeae7d02faec90ac3b14044419",
+        "size_bytes": 580053
+      },
+      {
+        "path": "project/assets/reference-figures/game_theory_influence_diagram.png",
+        "sha256": "b4618ce28f5803e98807601be6ab97e004e6b71815af57d58cd7c6badf065f0e",
+        "size_bytes": 937344
+      },
+      {
+        "path": "project/assets/reference-figures/pipeline_architecture.png",
+        "sha256": "a8d1fc0f5ad5daf5e994bd6b2ebce1ae85577015b8c6dc1bf803f2e2f4ebddd7",
+        "size_bytes": 917543
+      },
+      {
+        "path": "project/assets/reference-figures/rag_pipeline.png",
+        "sha256": "7f1a3f0cc52de08c6fff1eccf5e086ab8f55d960af9f2af819a5c7461e2a6eb3",
+        "size_bytes": 702652
+      },
+      {
+        "path": "project/assets/reference-figures/textmamba3d_architecture.png",
+        "sha256": "30e9b90b9198db16ac9ca0838e2cd670711da5cd92b4431f0bdf276bf10e09bb",
+        "size_bytes": 503066
+      },
+      {
+        "path": "project/assets/reference-figures/transformer_architecture.png",
+        "sha256": "a4ca29180de69049a71376896efce86a769e1b0918d7c09b30495b448a385620",
+        "size_bytes": 808400
+      },
+      {
+        "path": "project/components/annotation/AnnotationLabel.d.ts",
+        "sha256": "586494fcdffdbc85b84b1e1dd04e1063a5b2f0af4c7f5bef2c76c3c17f8dbad4",
+        "size_bytes": 484
+      },
+      {
+        "path": "project/components/annotation/AnnotationLabel.jsx",
+        "sha256": "0c5e1794f63dcdec4237bf05b358ff26e0f3acc45b95c0161e9f1a5a4d97843c",
+        "size_bytes": 1291
+      },
+      {
+        "path": "project/components/annotation/AnnotationLabel.prompt.md",
+        "sha256": "28a50cc5b455e03320f2f4deaf626b2d9fa2e9ca2acd962a57b540463f4699ea",
+        "size_bytes": 498
+      },
+      {
+        "path": "project/components/annotation/Callout.d.ts",
+        "sha256": "50549bd1cfe1d5c3d6986b283f0e76448c7d21c671aa7457f18b5804f41f1979",
+        "size_bytes": 544
+      },
+      {
+        "path": "project/components/annotation/Callout.jsx",
+        "sha256": "5e4d80e0f05a6ca317a10986573e54c1dfed7ce3acb34f997ec9a1896eded982",
+        "size_bytes": 1936
+      },
+      {
+        "path": "project/components/annotation/Callout.prompt.md",
+        "sha256": "088b2005b29dbff87bcb2f40f825641e5da0c4617b2b674f219c8a05be5e378d",
+        "size_bytes": 430
+      },
+      {
+        "path": "project/components/annotation/DimensionTag.d.ts",
+        "sha256": "8ae36371d55191b87ac66bcbbfaa8e0907a9c02ff61c3f4b4f090bcf9fdcce56",
+        "size_bytes": 504
+      },
+      {
+        "path": "project/components/annotation/DimensionTag.jsx",
+        "sha256": "7626cdc784959435b0fe08f0696835e00072a53bc48e1dff50deb52d9b514bc8",
+        "size_bytes": 1702
+      },
+      {
+        "path": "project/components/annotation/DimensionTag.prompt.md",
+        "sha256": "34602fda7c0161b6194b5850735f1a0e716e9ee5ef981c40c0c9eb46cc73d20c",
+        "size_bytes": 406
+      },
+      {
+        "path": "project/components/annotation/FigureCaption.d.ts",
+        "sha256": "e23f4a0ff05dc03775cd543e465473ccc5dd3f70474de380440da8fb24a53eed",
+        "size_bytes": 664
+      },
+      {
+        "path": "project/components/annotation/FigureCaption.jsx",
+        "sha256": "607b7b6484191b3667d30196ff90071ac61c8ae4c32505a60ccb1711aa20f18f",
+        "size_bytes": 1874
+      },
+      {
+        "path": "project/components/annotation/FigureCaption.prompt.md",
+        "sha256": "bb9967980427aed503ac352dbbe5c032b9bab33ea3cadf234740f7387e31f4c0",
+        "size_bytes": 656
+      },
+      {
+        "path": "project/components/annotation/Legend.d.ts",
+        "sha256": "2496060d13621ea78c5adb778d6a9b109f2bc4e6d95fa20b1b9369756b88f471",
+        "size_bytes": 633
+      },
+      {
+        "path": "project/components/annotation/Legend.jsx",
+        "sha256": "2ecea70cff47980bb96ad9175235f5d2f8d7335978ffad04cdf4e7db1ec8373c",
+        "size_bytes": 3258
+      },
+      {
+        "path": "project/components/annotation/Legend.prompt.md",
+        "sha256": "e56855351d4acd8f817c198f158b5568bad56bc9d05fa6abd078d97468ab81a8",
+        "size_bytes": 574
+      },
+      {
+        "path": "project/components/annotation/annotation.card.html",
+        "sha256": "694db9f4a4df86e31eb1dce6820f96fda9c5fc4be3b8ed6e0e9718d587f3587e",
+        "size_bytes": 3537
+      },
+      {
+        "path": "project/components/charts/BarChart.d.ts",
+        "sha256": "da5794adf055ba775a350f19834403089f27ec63fee1316cd016315da5b550d2",
+        "size_bytes": 959
+      },
+      {
+        "path": "project/components/charts/BarChart.jsx",
+        "sha256": "10212a129aa31164e3e004579ee923a6af35b9f617b471fef5f1b9bbe71a95c3",
+        "size_bytes": 4361
+      },
+      {
+        "path": "project/components/charts/BarChart.prompt.md",
+        "sha256": "c8dd20f9d9f11f4e3a825534c3fd4f07cd824348e818e7ec9e152f11b6063a27",
+        "size_bytes": 705
+      },
+      {
+        "path": "project/components/charts/charts.card.html",
+        "sha256": "941fe1fb3798b1c4b145eb7383117dc94eb785321de2ee5ee5eb83f43f794dca",
+        "size_bytes": 1595
+      },
+      {
+        "path": "project/components/diagram/Brace.d.ts",
+        "sha256": "a33ce4c2534424527021cb49143714b75e2ea7cf2533a5c43b56acc7dc2842a8",
+        "size_bytes": 679
+      },
+      {
+        "path": "project/components/diagram/Brace.jsx",
+        "sha256": "5378414ab4060c359215b5f8ae54acdd93caee8d8f0055ab244f08c8a4d48d9e",
+        "size_bytes": 2807
+      },
+      {
+        "path": "project/components/diagram/Brace.prompt.md",
+        "sha256": "893d174cb69803a57be6aadcb70cd1c546f40ddc38819b610f114b2ad0c16638",
+        "size_bytes": 511
+      },
+      {
+        "path": "project/components/diagram/FlowArrow.d.ts",
+        "sha256": "5c7644539300b6c0bbdc161d3d55638f54dae32738175789d4ec4e618fa30fe1",
+        "size_bytes": 823
+      },
+      {
+        "path": "project/components/diagram/FlowArrow.jsx",
+        "sha256": "97b0135d65cc31bedf9ce3f176adede277119c7ee1aebb88923fcf6fd8ac23c6",
+        "size_bytes": 4390
+      },
+      {
+        "path": "project/components/diagram/FlowArrow.prompt.md",
+        "sha256": "d44e33c320bb426d66804b7bc6f2e76d165949e44c2859fd50ccae92eeff45bd",
+        "size_bytes": 738
+      },
+      {
+        "path": "project/components/diagram/GroupContainer.d.ts",
+        "sha256": "c465ea4ca5c5e55ce7cd60bd55ba370024926544901dc66fd1da1cdd69dd1b7e",
+        "size_bytes": 816
+      },
+      {
+        "path": "project/components/diagram/GroupContainer.jsx",
+        "sha256": "bae24f1aff4708767c23dac89bb3f4f64346a76aa43ad92ec198afb63802181d",
+        "size_bytes": 3781
+      },
+      {
+        "path": "project/components/diagram/GroupContainer.prompt.md",
+        "sha256": "8328251c760d32529b0b17b2e22557b18032cc292db91ac9aeab8647567a07cf",
+        "size_bytes": 693
+      },
+      {
+        "path": "project/components/diagram/ModuleBox.d.ts",
+        "sha256": "0ff37bf12c706ae4d232a9befad8474a7f70a9615c5716fffbb51e3ef1025d9e",
+        "size_bytes": 1189
+      },
+      {
+        "path": "project/components/diagram/ModuleBox.jsx",
+        "sha256": "908664e7800189663227f16e55036fa3f475b7c5d6eefbac586c78f779380ac4",
+        "size_bytes": 3264
+      },
+      {
+        "path": "project/components/diagram/ModuleBox.prompt.md",
+        "sha256": "bbabee01b6e3cbbaf18744c517a7b9e720583b1c2cc90c777562f9ab028cb1a8",
+        "size_bytes": 800
+      },
+      {
+        "path": "project/components/diagram/NodeShape.d.ts",
+        "sha256": "cbd3fe2115c59da683748ee4ea7623ee1da24633933170a3cc73fa00fed77195",
+        "size_bytes": 642
+      },
+      {
+        "path": "project/components/diagram/NodeShape.jsx",
+        "sha256": "50e4d6f4ba3ffef2a8090bca207f97a2231612f4bcb5f25c2cc28fa3d8ca792d",
+        "size_bytes": 2624
+      },
+      {
+        "path": "project/components/diagram/NodeShape.prompt.md",
+        "sha256": "d89fd675f282253515fc4e81f095cf0d9551dc963d812c00f85d92d82d5a9469",
+        "size_bytes": 594
+      },
+      {
+        "path": "project/components/diagram/diagram.card.html",
+        "sha256": "8f21e66f26f81c19628cf9a21b82f210c8840f03d90d2de6045a91409391116a",
+        "size_bytes": 3878
+      },
+      {
+        "path": "project/components/panels/ImagePanel.d.ts",
+        "sha256": "84e261b98d8af98818fb5764c6f8ab69149f9a5efab3370b038dcc1a157f3b30",
+        "size_bytes": 719
+      },
+      {
+        "path": "project/components/panels/ImagePanel.jsx",
+        "sha256": "f56c3e98669a5893d5d04788fe31c73355a045cf7401628238ec29623eb96f33",
+        "size_bytes": 2839
+      },
+      {
+        "path": "project/components/panels/ImagePanel.prompt.md",
+        "sha256": "dc937db38f2eac2e8bb1f337f84cf1e505727a016288bd1ba9a2a72329591532",
+        "size_bytes": 578
+      },
+      {
+        "path": "project/components/panels/panels.card.html",
+        "sha256": "f73c37dd8674e143db02ecfeb34f5311fa50755227db276d741d245975e8c1e6",
+        "size_bytes": 1833
+      },
+      {
+        "path": "project/guidelines/brand-checklist.card.html",
+        "sha256": "f2e6b5feaced1d9e0d5a6f9ca1a60497a12961261941d424f5f940efcab80544",
+        "size_bytes": 1524
+      },
+      {
+        "path": "project/guidelines/brand-philosophy.card.html",
+        "sha256": "5ea271cd7ff3430afa21f5b89f0747d94d26ecf9338d99284046e98071458867",
+        "size_bytes": 1484
+      },
+      {
+        "path": "project/guidelines/colors-ink.card.html",
+        "sha256": "088b07aeaede1f2c6711a9e15a119527e695b92e572dc5dc36c8b792fb654939",
+        "size_bytes": 1487
+      },
+      {
+        "path": "project/guidelines/colors-pathways.card.html",
+        "sha256": "4a22501dd0c44c9a981000733c39f0ed708e5ca021bf446194ee5c03f3bd56f7",
+        "size_bytes": 1528
+      },
+      {
+        "path": "project/guidelines/colors-ramp-venues.card.html",
+        "sha256": "c32111c43f7f52b3ad285ae2eedd0dc02a93bccd856fa01dec45b1a1605e43d2",
+        "size_bytes": 2028
+      },
+      {
+        "path": "project/guidelines/spacing-radii.card.html",
+        "sha256": "2d9db112e580995a3b6d3646c57179205678c7eaa80c5dfef989d4bd86e0c726",
+        "size_bytes": 2224
+      },
+      {
+        "path": "project/guidelines/spacing-scale.card.html",
+        "sha256": "fba17073bd81b3ba14c1edfb71c6eaea65566055133fdb42dd6ff1d96b11742b",
+        "size_bytes": 1116
+      },
+      {
+        "path": "project/guidelines/type-families.card.html",
+        "sha256": "c6c0c63488738a68ee0690262fade9d44fe167632d0562d137cf6cf0b73d90d5",
+        "size_bytes": 1697
+      },
+      {
+        "path": "project/guidelines/type-scale.card.html",
+        "sha256": "7f30ceed52971c50026853e2b9016559d3c6bf86305133f2bfc84b581153f37b",
+        "size_bytes": 1447
+      },
+      {
+        "path": "project/readme.md",
+        "sha256": "b471b5b0ff29a0370712b33fb801d814f56544be70a8fbb177ca92e3415b5314",
+        "size_bytes": 10555
+      },
+      {
+        "path": "project/styles.css",
+        "sha256": "a90c69d9b34b9e8513b09c3b5c0fc357150ec530afe82d28214b01a3a200e708",
+        "size_bytes": 575
+      },
+      {
+        "path": "project/tokens/colors.css",
+        "sha256": "94f6b2a40f1a885e8746bbc3cf7c81b80e327805d38580ce65ccf127fc49c1ad",
+        "size_bytes": 3929
+      },
+      {
+        "path": "project/tokens/fonts.css",
+        "sha256": "6c8f13cffb67c4e547e037f198e06378c419a90c85142d4e00188cb112a84f2b",
+        "size_bytes": 1067
+      },
+      {
+        "path": "project/tokens/spacing.css",
+        "sha256": "2f190cd7f01e2f05cb23a531bf7e4c647804714aaeeb27a16b03409346ac72db",
+        "size_bytes": 2004
+      },
+      {
+        "path": "project/tokens/typography.css",
+        "sha256": "4342849b638f1c2b7f9675309e01f438def684f0b28add54f4ad23ee04f9a00f",
+        "size_bytes": 3402
+      },
+      {
+        "path": "project/ui_kits/ablation-figure/README.md",
+        "sha256": "f3e8ae61fcf051a75a918e8f5dca4a5f4f2e34bb45ab55edce2b9593326c6a6a",
+        "size_bytes": 800
+      },
+      {
+        "path": "project/ui_kits/ablation-figure/index.html",
+        "sha256": "0e145e763aa98f5ca696dd8584c40e8ec904bdb2fc002db05a8465a957ab99ca",
+        "size_bytes": 3414
+      },
+      {
+        "path": "project/ui_kits/architecture-figure/README.md",
+        "sha256": "c461da7f28bc4d9875029bd006f0a977ede256e9977e82fa28cca1f44224ca1b",
+        "size_bytes": 1055
+      },
+      {
+        "path": "project/ui_kits/architecture-figure/index.html",
+        "sha256": "f2157105a959ee1b54b7b3bc22208cb2b1a6fc6d60ee9e85bef207434fcb63a2",
+        "size_bytes": 6541
+      },
+      {
+        "path": "project/ui_kits/influence-diagram/README.md",
+        "sha256": "462b8ab01955f58c54195ec561e2c8d71b9aa10ccbd0a038f4bf46e959aeef92",
+        "size_bytes": 1019
+      },
+      {
+        "path": "project/ui_kits/influence-diagram/index.html",
+        "sha256": "ca24e61e6903923217db8cfd1566108e87f6166701db87c3c23633ece2a7ec6a",
+        "size_bytes": 8924
+      }
+    ]
+  },
+  "design_system": {
+    "namespace": "PaperFigureDesignSystemICRAICLR_f8313b",
+    "primary_design_file": "project/Architecture Figure.html",
+    "skill_file": "project/SKILL.md",
+    "readme": "project/readme.md",
+    "entry_css": "project/styles.css",
+    "entry_bundle": "project/_ds_bundle.js",
+    "manifest": "project/_ds_manifest.json",
+    "components": [
+      "AnnotationLabel",
+      "Callout",
+      "DimensionTag",
+      "FigureCaption",
+      "Legend",
+      "BarChart",
+      "Brace",
+      "FlowArrow",
+      "GroupContainer",
+      "ModuleBox",
+      "NodeShape",
+      "ImagePanel"
+    ],
+    "starting_points": [
+      {
+        "name": "ablation-figure",
+        "path": "ui_kits/ablation-figure/index.html",
+        "previewPath": "ui_kits/ablation-figure/index.html",
+        "kind": "screen",
+        "section": "Paper figures",
+        "subtitle": "Qualitative panels + ablation bar chart",
+        "viewport": "900x680"
+      },
+      {
+        "name": "architecture-figure",
+        "path": "ui_kits/architecture-figure/index.html",
+        "previewPath": "ui_kits/architecture-figure/index.html",
+        "kind": "screen",
+        "section": "Paper figures",
+        "subtitle": "Multimodal robot-policy architecture diagram",
+        "viewport": "1120x620"
+      },
+      {
+        "name": "influence-diagram",
+        "path": "ui_kits/influence-diagram/index.html",
+        "previewPath": "ui_kits/influence-diagram/index.html",
+        "kind": "screen",
+        "section": "Paper figures",
+        "subtitle": "POMDP / graphical-model swimlane diagram",
+        "viewport": "1040x560"
+      }
+    ],
+    "themes": [
+      {
+        "selector": ".venue-ieee",
+        "label": "Venue Ieee"
+      },
+      {
+        "selector": ".venue-iclr",
+        "label": "Venue Iclr"
+      },
+      {
+        "selector": ".venue-corl",
+        "label": "Venue Corl"
+      }
+    ],
+    "global_css_paths": [
+      "tokens/fonts.css",
+      "tokens/colors.css",
+      "tokens/typography.css",
+      "tokens/spacing.css",
+      "styles.css"
+    ],
+    "brand_fonts": [
+      "Source Sans 3",
+      "STIX Two Text",
+      "IBM Plex Mono"
+    ]
+  },
+  "policies": {
+    "vendor_mutable": false,
+    "reference_pngs": "style_reference_only; never include, trace, crop, or redistribute in final figures/papers/public artifacts",
+    "remote_assets_at_render": false,
+    "font_binaries_in_public_bundle": false,
+    "license_note": "The handoff bundle contains no standalone LICENSE file. Do not publish or redistribute the vendor source or reference assets until an independent source/license review is recorded."
+  }
+}

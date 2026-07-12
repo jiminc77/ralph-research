@@ -1,0 +1,29 @@
+schema_version: "4.1"
+run:
+  name: default
+  defaults:
+    budget:
+      cost_cap_usd: 25.0
+      gpu_hour_cap: null
+      wall_clock_hours: 8
+models:
+  orchestrator: claude-fable-5
+  builder: claude-fable-5
+  verifier: claude-fable-5
+  writer: claude-fable-5
+  reviewer:
+    alias: claude-opus-4-8
+    effort: max
+paths:
+  runs_dir: runs
+  data_manifest: data/data_manifest.lock.json
+  statistical_protocol: statistics/statistical_protocol.lock.json
+  venue_profile: venue/venue_profile.lock.yml
+security:
+  sandbox_required: true
+  allow_unsandboxed: false
+adapters:
+  provider: ralph_core.adapters.agent_sdk.AgentSDKProvider
+  gjc: ralph_core.adapters.gjc_rpc.GJCAdapter
+  design: ralph_core.roles.figure.ClaudeDesignClient
+  sandbox: ralph_core.adapters.agent_sdk.SandboxProbe

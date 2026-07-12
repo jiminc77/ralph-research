@@ -1,0 +1,8 @@
+.gjc/
+runs/
+figures/paperfigure/vendor/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dod-artifacts/

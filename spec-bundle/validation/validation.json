@@ -1,0 +1,83 @@
+{
+  "spec_version": "4.1-lean",
+  "spec": {
+    "path": "research-ralph-implementation-spec-v4.1-lean.md",
+    "sha256": "787ec6392c355e29bcc0d20ce9c4f6ae316cde15210ebe85c239c4c627a062c8",
+    "lines": 2121,
+    "bytes": 53681,
+    "fences_balanced": true,
+    "acceptance_test_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32
+    ],
+    "acceptance_tests_contiguous": true
+  },
+  "sql": {
+    "path": "research-ralph-core-v4.1-lean.sql",
+    "sha256": "744beb63fc6db9a48b4a88cbe9c52788840c0d94b32b60fb42952edf226b7793",
+    "tables": [
+      "artifacts",
+      "decisions",
+      "events",
+      "experiments",
+      "metrics",
+      "model_calls",
+      "reviews",
+      "runs",
+      "tasks"
+    ],
+    "table_count": 9,
+    "foreign_key_check": []
+  },
+  "worker_result_schema": {
+    "path": "research-ralph-worker-result-v4.1.schema.json",
+    "sha256": "b9e81edc96e1c6ff5f936b062bcb82efad9b4ea083874532f6d027e2aca93520",
+    "json_valid": true
+  },
+  "paperfigure": {
+    "archive_sha256": "d4cb4667d0c014871a0271a107f337bd4be97e0382a06a493f013a19a2909ba6",
+    "file_count": 73,
+    "unsafe_paths": [],
+    "font_files": [],
+    "source_lock_sha256": "a1fdbccb1f9552bf458dfc466179982d62297170174a57621432283717e73717"
+  },
+  "comparison_to_v4_0": {
+    "v4_0_lines": 3795,
+    "v4_1_lean_lines": 2121,
+    "line_reduction_percent": 44.1,
+    "v4_0_database_tables": 25,
+    "v4_1_database_tables": 9,
+    "v4_1_long_running_daemons": 1,
+    "v4_1_required_acceptance_tests": 32
+  }
+}
