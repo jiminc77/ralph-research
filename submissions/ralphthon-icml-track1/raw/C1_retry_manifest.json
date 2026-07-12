@@ -1,0 +1,20 @@
+{
+  "candidate": "C1",
+  "policy": "one mechanical retry of every invalid state table",
+  "source_analysis": "/tmp/wvh-c01/analysis_dev.json",
+  "source_states": "/root/wvh/states_dev32_operator.json.gz",
+  "state_ids": [
+    "dev-t1a_straighten-random_smooth-12",
+    "dev-t1a_straighten-random_smooth-21",
+    "dev-t1a_straighten-random_smooth-5",
+    "dev-t1a_straighten-s_curve-0",
+    "dev-t1a_straighten-s_curve-1",
+    "dev-t1a_straighten-s_curve-3",
+    "dev-t1b_single_bend-random_smooth-3",
+    "dev-t1b_single_bend-s_curve-1",
+    "dev-t1b_single_bend-s_curve-3",
+    "dev-t1c_endpoint_reposition-s_curve-3"
+  ],
+  "n_retry_states": 10,
+  "generated_utc": "2026-07-12T04:23:12Z"
+}

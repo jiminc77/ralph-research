@@ -1,0 +1,294 @@
+\documentclass{article}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\usepackage{icml2026}
+\usepackage{amsmath,amssymb,mathtools}
+\setlength{\bibsep}{2pt}
+
+\input{numbers}
+
+\icmltitlerunning{Where to Act versus Which Way to Move}
+
+\begin{document}
+\twocolumn[
+\icmltitle{Where to Act versus Which Way to Move:\\
+A Preregistered Factorial Pilot on One-Step\\
+Deformable Linear Object Manipulation}
+\begin{icmlauthorlist}
+  \icmlauthor{Anonymous Author}{anon}
+\end{icmlauthorlist}
+\icmlaffiliation{anon}{Anonymous Institution}
+\icmlcorrespondingauthor{Anonymous Author}{anonymous@example.com}
+\icmlkeywords{deformable object manipulation, factorial intervention, action attribution}
+\vskip 0.3in
+]
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+Hybrid contact actions $a=(p,u)$ couple a decision about \emph{where} to act
+(contact location $p$) with a decision about \emph{how} to move (motion
+parameter $u$). Methods that jointly select both factors do not reveal which
+factor carries the achieved one-step progress. We report a preregistered
+factorial intervention study on quasi-static deformable linear object (DLO)
+manipulation in a GPU-parallel rod simulator: for each canonicalized state we
+execute the complete $8{\times}8$ table of contact arc-length positions
+$\times$ fixed-magnitude planar motion directions and decompose the resulting
+one-step progress into contact, direction, and interaction contributions. We
+deliberately scope the claim narrowly: the comparison is \emph{contact-location
+choice versus fixed-magnitude planar-direction choice}, not a universal
+``where versus how,'' because the two factors have asymmetric expressiveness.
+On a pilot of \nstatestotal{} states across three tasks
+(\ncellstotal{} executed action cells, candidate \selcand{};
+preregistered scale was not reachable in the available budget), the primary
+contrast $\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ is
+$\dwhA$~[\dwhAlo, \dwhAhi] for straightening,
+$\dwhB$~[\dwhBlo, \dwhBhi] for single-bend shaping, and
+$\dwhC$~[\dwhClo, \dwhChi] for endpoint repositioning
+(simultaneous 95\% intervals; minimum preregistered effect $0.02$).
+\resultsummary{} \absguards{} We release estimand definitions, guard thresholds, and
+per-cell raw tables; we label every number as pilot-scale evidence, not
+confirmatory findings.
+\end{abstract}
+
+\section{Introduction}
+Non-prehensile and hybrid-action manipulation methods, e.g.\ HACMan-style
+actor--critic maps~\citep{zhou2023hacman} and dense affordance models for
+deformable objects~\citep{wu2023foresightful}, select a contact location and a
+motion parameter jointly. A successful action therefore does not identify
+whether performance came from selecting \emph{where} to act, \emph{how} to
+move, or a specific contact--motion pairing. This attribution gap matters for
+system design: it determines whether future effort should buy dense contact
+maps, richer motion generation, or explicit joint reasoning.
+
+We study this gap with a factorial intervention on one-step, quasi-static DLO
+manipulation. For a canonicalized rope state $s$ with goal $g$, we execute
+\emph{every} cell of an $8{\times}8$ grid of contact positions $\times$ planar
+motion directions and measure normalized one-step progress. Marginal and joint
+maxima of the resulting table decompose achievable progress into a
+contact-selection contribution, a direction-selection contribution, and an
+interaction term that is available only under joint selection.
+
+\paragraph{Narrow claim boundary.}
+The two factors are \emph{not} symmetric in expressiveness: the contact factor
+covers the full normalized arc length of the rope at 8 points, while the
+motion factor covers only 8 directions in the horizontal plane at a fixed
+displacement magnitude, with no magnitude, vertical, or rotational component.
+Equal $8{\times}8$ cardinality equalizes search budget, not representational
+completeness. All results below therefore compare \emph{contact-location
+choice versus fixed-magnitude planar-direction choice}; they are not evidence
+about ``where versus how'' in general, and an observed dominance of either
+factor can partially reflect this parameterization asymmetry.
+
+\paragraph{Contributions.}
+(i)~A preregistered factorial design for one-step DLO action attribution with
+explicit validity guards, a complete-table-or-invalid policy that separates
+invalid runs from valid null results, and fixed-priority candidate selection
+that never uses effect sign, magnitude, or $p$-values.
+(ii)~A pilot execution of this design on three tasks in a GPU rod simulator,
+with complete raw tables, controls, and uncertainty from stratified cluster
+bootstrap with simultaneous intervals.
+(iii)~An honest account of what a deadline-bounded budget allowed: the pilot
+covers \nstatespertask{} states per task on the development split; hidden-split
+confirmation and clean reproduction were not run, so no confirmatory claims
+are made.
+
+\section{Study design}
+\subsection{Environment, states, and primitive}
+We use a GPU-parallel discrete-rod simulator (a DLO benchmark environment
+built on a differentiable rod solver~\citep{cao2026dlolab}) with a 32-vertex
+rope. States are \emph{canonicalized quasi-static} configurations: an analytic
+initial centerline (stratified over shape templates) is placed, velocities are
+zeroed, and the rope is settled to a velocity threshold of $10^{-3}$ with an
+explicit cap of $10^4$ steps. The action primitive is grasp--move--release--settle
+at a chosen vertex; grasp realism is disabled in the primary condition so that
+attachment is deterministic. Placement error after canonicalization is guarded
+at $\le 10^{-4}$\,m per table (Section~2.4).
+
+Tasks are t1a \emph{straighten}, t1b \emph{single bend}, and t1c
+\emph{endpoint reposition}, each with stratified initial shapes
+(\{u\_bend, s\_curve, random\_smooth\} for t1a; additionally \{straight\} for
+t1b/t1c). Task error $D$ is a correspondence-$L_2$ distance to a goal template
+(Chamfer is forbidden as primary by preregistration). A state is eligible only
+if $D_{\text{before}} \ge 0.10$ (twice the success threshold), checked before
+any action. Action quality is normalized one-step progress
+\begin{equation}
+Y(p,u) = \frac{D_{\text{before}} - D_{\text{after}}(p,u)}
+              {\max(D_{\text{before}}, 10^{-8})}.
+\end{equation}
+
+\subsection{Factorial action grid and candidates}
+Contacts are 8 normalized arc-length positions $\sigma_i = i/7$ mapped to the
+nearest native vertex; motions are 8 planar directions at $45^\circ$
+increments. Candidate execution regimes fix displacement magnitude and lift
+height: C0 $(0.10\,\text{m}, \text{low})$, C1 $(0.05\,\text{m}, \text{low})$,
+C2 $(0.10\,\text{m}, \text{high})$, C3 $(0.05\,\text{m}, \text{high})$.
+Candidate selection is \emph{fixed-priority after hard validity}
+(C0$\to$C1$\to$C2$\to$C3): a candidate is selected iff it is the first whose
+run passes hard validity guards; effect size, sign, and $p$-values are never
+consulted. In this pilot, \selcand{} was selected\selcandreason{}.
+
+\subsection{Estimands}
+For each state's complete $8{\times}8$ table:
+$v_0=\operatorname{mean}_{p,u} Y$;\;
+$v_P=\max_p \operatorname{mean}_u Y$;\;
+$v_U=\max_u \operatorname{mean}_p Y$;\;
+$v_{PU}=\max_{p,u} Y$.
+The primary contrast per task is
+$\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ (contact-selection minus
+direction-selection value); secondary estimands are the interaction
+$I=\mathbb{E}_s[v_{PU}-v_P-v_U+v_0]$, oracle gain
+$\mathbb{E}_s[v_{PU}-v_0]$, and two-way ANOVA variance shares of the table.
+Because $v_P$, $v_U$, $v_{PU}$ are maxima, they are upward-biased under
+measurement noise and $I$ inherits a positive bias; we therefore quantify the
+noise floor directly with a zero-displacement control (identical primitive
+with zero motion), whose $|Y|$ has median \zerodeltamed{} and 99th percentile
+\zerodeltapninenine{} on this pilot, and we interpret $I$ only relative to
+this floor.
+
+\subsection{Validity and statistics}
+A table is valid only if all 64 cells complete with successful grasp,
+converged settle, finite outputs, and a re-placement error of the
+canonicalized state within the $10^{-4}$\,m reset guard; any failure
+invalidates the whole table (one retry, no cell deletion, no post-hoc state
+replacement). Invalid tables
+are reported separately from valid null results. Guards cover no-op drift
+(re-settle and re-measure the same state), repeatability (identical tables
+executed twice, including top-action equivalence with tie tolerance
+$10^{-4}$), settle convergence rate, non-finite incidents, invalid-table rate,
+and factor-dependent invalidity gaps.
+
+Uncertainty uses a stratified (task $\times$ initial-shape) cluster bootstrap
+over states with $10^4$ resamples; the three per-task primary contrasts form
+one family with studentized max-$t$ simultaneous 95\% intervals. The
+preregistered minimum absolute effect is $0.02$; a task is labeled
+\emph{contact-dominant} only if $\Delta_{WH}\ge 0.02$ with simultaneous lower
+bound $>0$, \emph{direction-dominant} symmetrically, else
+\emph{balanced/inconclusive}. Cross-task contrasts are computed on the shared
+strata \{u\_bend, s\_curve, random\_smooth\} with equal stratum weights, which
+corrects a composition confound in the original preregistration (t1b/t1c
+include a \emph{straight} stratum that t1a lacks).
+
+\subsection{Deviations from preregistration}
+This is a deadline-bounded pilot, and we report it as such:
+(1) \nstatespertask{} development-split states per task instead of the
+registered 96/64; (2) hidden-split confirmation and clean reproduction were
+not executed, so labels below are development-split evidence only;
+(3) cross-task contrasts use the shared-strata correction above;
+(4) claim language is narrowed to contact-location versus fixed-magnitude
+planar-direction choice; (5) the registered \emph{study-level} placement
+guard ($\le 10^{-4}$\,m) is operationalized per table: states whose
+canonicalized configuration cannot be re-placed within the guard yield
+invalid tables that are quarantined rather than aborting the study. The
+$8{\times}8$ grid, candidate definitions,
+priority order, eligibility rule, guards, and estimands are unchanged from the
+preregistration.
+
+\section{Results}
+\paragraph{Validity.}
+\guardlead{} Measured guard values: no-op drift median \guardnoopmed{}
+(threshold $10^{-3}$) and p99 \guardnooppninenine{} ($\le 5{\times}10^{-3}$),
+repeat top-action equivalence \guardrepagree{} ($\ge 0.99$), settle
+convergence \guardsettle{} ($\ge 0.95$), non-finite incidents
+\guardnonfinite{}, invalid-table rate \guardinvrate{} ($\le 0.02$),
+factor-dependent invalidity gap \guardfactorgap{}, placement error over used
+tables \guardplaceerrused{} ($\le 10^{-4}$).
+Throughput was \cellsps{} valid action cells/s at 512 parallel environments.
+
+\begin{table}[t]
+\centering\small
+\caption{Primary contrast $\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ per task,
+candidate \selcand{}, with studentized max-$t$ simultaneous 95\% intervals
+over the three-task family. $n$ = valid states. Labels use the preregistered
+rule with minimum effect $0.02$. Pilot scale; development split only.}
+\label{tab:primary}
+\resizebox{\columnwidth}{!}{\primarytable}
+\end{table}
+
+\begin{table}[t]
+\centering\small
+\caption{Factorial decomposition per task, candidate \selcand{}
+(state means, pointwise 95\% bootstrap CIs). $I$ is upward-biased by
+noise; compare against the zero-displacement floor
+(median \zerodeltamed, p99 \zerodeltapninenine).}
+\label{tab:decomp}
+\resizebox{\columnwidth}{!}{\decomptable}
+\end{table}
+
+\paragraph{Primary contrast.}
+Table~\ref{tab:primary} and Figure~\ref{fig:primary} give $\Delta_{WH}$ per
+task. \resultsummary{} \crosscandsummary{}
+
+\paragraph{Decomposition and interaction.}
+Table~\ref{tab:decomp} reports marginal and joint components.
+\interactionsummary{} Variance shares of the mean tables attribute
+\varsharesummary{} Figure~\ref{fig:heatmaps} shows the mean tables; the
+best cell location varies across tasks, and the table structure (row versus
+column striping) visually matches the sign of $\Delta_{WH}$.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_heatmaps.pdf}
+\caption{Mean one-step progress $Y$ over states for each task (candidate
+\selcand). Rows: contact arc-length $\sigma$; columns: planar motion angle.
+Star: best mean cell.}
+\label{fig:heatmaps}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_primary.pdf}
+\caption{$\Delta_{WH}$ per task and candidate with simultaneous 95\%
+intervals; shaded band is the preregistered minimum effect $\pm 0.02$.}
+\label{fig:primary}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_decomposition.pdf}
+\caption{Factorial decomposition per task (candidate \selcand): contact main
+effect $v_P{-}v_0$, direction main effect $v_U{-}v_0$, interaction $I$, and
+joint oracle gain $v_{PU}{-}v_0$.}
+\label{fig:decomp}
+\end{figure}
+
+\paragraph{Cross-task contrasts (shared strata).}
+On the shared strata with equal weights, the t1c$-$t1a interaction difference
+(preregistered H3) is \hthree{}~[\hthreelo, \hthreehi]. \hthreesummary{}
+
+\paragraph{Interpretation caveats.}
+A negative $\Delta_{WH}$ need not mean direction \emph{knowledge} is more
+valuable in a constructive sense: a wrong planar direction actively pushes the
+rope away from the goal ($Y<0$), while a wrong contact is often merely
+unhelpful ($Y\approx 0$), so direction selection can dominate through
+avoidance of harm. The sign structure of $v_0$ (grand mean
+\vzerosummary) bounds how much of the effect is harm-avoidance. Second, the
+asymmetric factor expressiveness (Section~1) means magnitude comparisons
+between factors are parameterization-relative.
+
+\section{Limitations}
+This is a pilot: \nstatespertask{} states per task on the development split,
+one simulator, one rope parameterization, no hidden-split confirmation, no
+clean reproduction, and no grasp realism. Effects are one-step, greedy
+quantities on canonicalized quasi-static states; they do not imply multi-step
+policy design conclusions. The motion factor omits magnitude, vertical, and
+rotational components; a $16{\times}16$ resolution probe and a
+magnitude-augmented motion factor are the registered follow-ups. Sample sizes
+imply wide intervals; per-task labels of \emph{balanced/inconclusive} should
+be read as underpowered, not as evidence of equality.
+
+\section{Conclusion}
+We provide a preregistration-faithful, guard-validated pilot answering how
+much one-step DLO progress is attributable to contact-location versus
+fixed-magnitude planar-direction selection. The design --- complete factorial
+tables, complete-table-or-invalid, effect-blind candidate selection, invalid
+vs.\ null separation --- is reusable at full scale, and all per-cell raw data,
+configs, and seeds are released for exact reproduction.
+
+\bibliographystyle{icml2026}
+\bibliography{references}
+
+\end{document}

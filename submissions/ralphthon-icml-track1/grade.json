@@ -1,0 +1,65 @@
+{
+ "study_id": "where-vs-how-dlo-v1",
+ "grade": "C",
+ "rationale": "Valid pilot evidence at reduced sample (dev split only, {'t1a_straighten': 13, 't1b_single_bend': 14, 't1c_endpoint_reposition': 15} states/task vs registered 96/64); hidden confirmation and clean reproduction not executed, so Grade B is blocked by policy (DECISION_POLICY.md section 14). Dev-split effects exceed the preregistered minimum for at least one task. No candidate is formally selectable: the 0.02 invalid-table-rate guard is unsatisfiable at pilot n (placement-artifact tables are quarantined; all estimates descriptive C0). Registered full-set noop guard failed on state(s) excluded from all used tables; used-state noop passes (see guards).",
+ "label": "pilot-dev-strict",
+ "claim_scope": "contact-location choice vs fixed-magnitude planar-direction choice, one quasi-static primitive, DLOLabEnv only",
+ "selected_candidate": null,
+ "selection_rule": "fixed_priority_after_hard_validity C0->C1->C2->C3",
+ "primary_contrasts": {
+  "t1a_straighten": {
+   "estimate": 0.0413122640067039,
+   "simultaneous_ci": [
+    0.029384886825624103,
+    0.0532396411877837
+   ],
+   "label": "where_dominant"
+  },
+  "t1b_single_bend": {
+   "estimate": -0.03441144243008168,
+   "simultaneous_ci": [
+    -0.07346254539770451,
+    0.004639660537541154
+   ],
+   "label": "balanced_or_inconclusive"
+  },
+  "t1c_endpoint_reposition": {
+   "estimate": -0.13039319413178968,
+   "simultaneous_ci": [
+    -0.16103771185921853,
+    -0.09974867640436083
+   ],
+   "label": "how_dominant"
+  }
+ },
+ "guards_evaluated": {
+  "reset_placement_error_max": "pass",
+  "noop_abs_progress_median": "pass",
+  "noop_abs_progress_p99": "FAIL",
+  "repeat_final_distance_median": "pass",
+  "repeat_final_distance_p99": "pass",
+  "repeat_top_action_equivalence_agreement": "pass",
+  "settle_convergence_rate": "pass",
+  "nonfinite_incidents": "pass",
+  "persistent_invalid_state_table_rate": "FAIL",
+  "factor_dependent_invalidity_gap": "pass"
+ },
+ "counts": {
+  "rows": 12288,
+  "valid_tables": 150,
+  "invalid_tables": 42,
+  "states": 42,
+  "per_task_valid": {
+   "t1a_straighten": 13,
+   "t1b_single_bend": 14,
+   "t1c_endpoint_reposition": 15
+  }
+ },
+ "provenance": {
+  "dgcc_commit": "2f9652754f94c28abe602094655c0a18d4b168cb",
+  "dlolab_commit": "c5026a9416b03c6bc5186eba13cd4ffd4c0e7796",
+  "n_boot": 10000
+ },
+ "submission_performed": false,
+ "generated_utc": "2026-07-12T04:54:04Z"
+}

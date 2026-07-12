@@ -1,0 +1,52 @@
+{
+ "study_id": "where-vs-how-dlo-v1",
+ "master_seed": 20260712,
+ "contact_nodes": [
+  0,
+  4,
+  9,
+  13,
+  18,
+  22,
+  27,
+  31
+ ],
+ "motion_angles_deg": [
+  0,
+  45,
+  90,
+  135,
+  180,
+  225,
+  270,
+  315
+ ],
+ "candidates": {
+  "C0": {
+   "disp": 0.1,
+   "lift": "low"
+  },
+  "C1": {
+   "disp": 0.05,
+   "lift": "low"
+  },
+  "C2": {
+   "disp": 0.1,
+   "lift": "high"
+  },
+  "C3": {
+   "disp": 0.05,
+   "lift": "high"
+  }
+ },
+ "eligibility_min_D": 0.1,
+ "settle": {
+  "vel_threshold": 0.001,
+  "max_steps": 10000
+ },
+ "grasp_realism": false,
+ "rope": {
+  "length_m": 1.0,
+  "n_segments": 32
+ }
+}

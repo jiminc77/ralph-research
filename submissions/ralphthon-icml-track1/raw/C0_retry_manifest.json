@@ -1,0 +1,13 @@
+{
+  "reason": "mechanical one-time retry: placement>1e-4 or settle failure",
+  "state_ids": [
+    "dev-t1a_straighten-random_smooth-12",
+    "dev-t1a_straighten-random_smooth-21",
+    "dev-t1a_straighten-s_curve-1",
+    "dev-t1a_straighten-s_curve-3",
+    "dev-t1b_single_bend-random_smooth-0",
+    "dev-t1b_single_bend-s_curve-1",
+    "dev-t1b_single_bend-s_curve-3",
+    "dev-t1c_endpoint_reposition-s_curve-3"
+  ]
+}

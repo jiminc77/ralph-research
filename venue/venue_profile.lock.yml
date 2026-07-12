@@ -1,5 +1,5 @@
-name: generic-research-report-v1
+name: icml2026-short-anonymous
 engine: latexmk
 template: venue/templates/generic
-page_limit: 8
+page_limit: 4
 citation_style: plain

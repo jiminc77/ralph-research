@@ -1,0 +1,54 @@
+\newcommand{\selcand}{C0}
+\newcommand{\selcandreason}{ -- no candidate passed hard validity; numbers below are reported for C0 descriptively}
+\newcommand{\nstatestotal}{40}
+\newcommand{\nstatespertask}{12/13/15}
+\newcommand{\ncellstotal}{2,560}
+\newcommand{\cellsps}{5.42}
+\newcommand{\dwhA}{+0.041}
+\newcommand{\dwhAlo}{+0.029}
+\newcommand{\dwhAhi}{+0.053}
+\newcommand{\dwhB}{-0.034}
+\newcommand{\dwhBlo}{-0.073}
+\newcommand{\dwhBhi}{+0.005}
+\newcommand{\dwhC}{-0.130}
+\newcommand{\dwhClo}{-0.161}
+\newcommand{\dwhChi}{-0.100}
+\newcommand{\resultsummary}{Under the preregistered labeling rule, t1a straighten is labeled \emph{contact-dominant}; t1b single bend is labeled \emph{balanced/inconclusive}; t1c endpoint reposition is labeled \emph{direction-dominant} on this pilot.}
+\newcommand{\crosscandsummary}{Across all 4 execution regimes (C0--C3), the sign of $\Delta_{WH}$ per task is \emph{not} consistent (Figure~\ref{fig:primary}); non-primary candidates are descriptive only.}
+\newcommand{\interactionsummary}{Interaction estimates are t1a straighten: +0.228 [+0.217, +0.239]; t1b single bend: +0.154 [+0.138, +0.168]; t1c endpoint reposition: +0.007 [-0.007, +0.020]. All three exceed the zero-displacement noise floor.}
+\newcommand{\varsharesummary}{contact/motion/interaction variance as t1a straighten: 12\%/2\%/86\%; t1b single bend: 8\%/16\%/76\%; t1c endpoint reposition: 12\%/66\%/21\%.}
+\newcommand{\vzerosummary}{t1a straighten: -0.151; t1b single bend: -0.142; t1c endpoint reposition: -0.066}
+\newcommand{\hthree}{-0.180}
+\newcommand{\hthreelo}{-0.201}
+\newcommand{\hthreehi}{-0.160}
+\newcommand{\hthreesummary}{The interval excludes zero.}
+\newcommand{\guardplaceerrused}{$7.8{\times}10^{-5}$}
+\newcommand{\guardnoopmed}{$1.0{\times}10^{-8}$}
+\newcommand{\guardnooppninenine}{$9.1{\times}10^{-3}$}
+\newcommand{\guardrepagree}{1.000}
+\newcommand{\guardsettle}{0.9957}
+\newcommand{\guardnonfinite}{0}
+\newcommand{\guardinvrate}{0.2188}
+\newcommand{\guardfactorgap}{$9.8{\times}10^{-3}$}
+\newcommand{\zerodeltamed}{$1.4{\times}10^{-3}$}
+\newcommand{\zerodeltapninenine}{$3.1{\times}10^{-3}$}
+\newcommand{\guardlead}{The invalid-table rate guard fails: 42 of 192 tables are invalid (rate 0.219 $>$ 0.02), dominated by 6 states with a canonicalization re-placement artifact (error up to $6.4{\times}10^{-3}$); the registered 0.02 threshold admits less than one invalid table per candidate at this pilot scale, so under the strict fixed-priority rule no candidate regime is selectable and all estimates in this paper are descriptive. Invalid tables are quarantined, never averaged in, and listed in the released data. The full-state-set no-op p99 guard fails, driven entirely by state(s) whose tables are quarantined; restricted to used states the no-op drift is median $1.0{\times}10^{-8}$, p99 $1.5{\times}10^{-4}$, well within thresholds.}
+\newcommand{\absguards}{Repeatability, drift, and noise-floor controls pass on all used tables, but a canonicalization re-placement artifact invalidates 42/192 state tables (quarantined and reported separately) and makes the strict preregistered invalid-rate guard unsatisfiable at pilot scale, so no candidate regime is formally selectable and all numbers are descriptive.}
+\newcommand{\primarytable}{\begin{tabular}{lcccc}
+\toprule
+Task & $n$ & $\Delta_{WH}$ & simult.\ 95\% CI & label \\
+\midrule
+t1a straighten & 12 & +0.041 & [+0.029, +0.053] & contact-dominant \\
+t1b single bend & 13 & -0.034 & [-0.073, +0.005] & balanced/inconclusive \\
+t1c endpoint reposition & 15 & -0.130 & [-0.161, -0.100] & direction-dominant \\
+\bottomrule
+\end{tabular}}
+\newcommand{\decomptable}{\begin{tabular}{lccccc}
+\toprule
+Task & $v_0$ & $v_P{-}v_0$ & $v_U{-}v_0$ & $I$ & $v_{PU}{-}v_0$ \\
+\midrule
+t1a straighten & -0.151 & +0.078 & +0.037 & +0.228 & +0.343 \\
+t1b single bend & -0.142 & +0.104 & +0.139 & +0.154 & +0.397 \\
+t1c endpoint reposition & -0.066 & +0.083 & +0.214 & +0.007 & +0.304 \\
+\bottomrule
+\end{tabular}}

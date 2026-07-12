@@ -1,10 +1,31 @@
 {
-  "primary_metric": "confirmation_agreement",
+  "study_id": "where-vs-how-dlo-v1",
+  "primary_metric": "where_minus_how_by_task",
   "direction": "maximize",
-  "minimum_effect": 0.05,
-  "seeds": [11, 23, 37],
-  "aggregate": "mean",
-  "ci": "bootstrap",
-  "selection_rule": "Select the candidate with the highest search_dev mean that satisfies all guards.",
-  "confirmation_rule": "Confirm the selected candidate once on hidden_confirmation without reselection."
+  "direction_note": "harness compatibility alias; scientific contrast is two-sided signed (vP - vU) with preregistered labels where_dominant / how_dominant / balanced_or_inconclusive",
+  "minimum_effect": 0.02,
+  "seeds": [20260712],
+  "seed_derivation": "SHA256('where-vs-how-dlo-v1|<split>|<task>|<stratum>|<index>|20260712')",
+  "aggregate": "mean_over_states_stratified_by_task_and_init_shape",
+  "ci": "stratified_cluster_bootstrap_max_t_simultaneous_B10000_conf0.95",
+  "confirmatory_family": [
+    "delta_wh:t1a", "delta_wh:t1b", "delta_wh:t1c",
+    "pairdiff_delta_wh:t1a-t1b(shared_strata)", "pairdiff_delta_wh:t1a-t1c(shared_strata)", "pairdiff_delta_wh:t1b-t1c(shared_strata)",
+    "interaction:t1a", "interaction:t1b", "interaction:t1c",
+    "h3_interaction:t1c-t1a(shared_strata)"
+  ],
+  "cross_task_contrast_strata": ["u_bend", "s_curve", "random_smooth"],
+  "interaction_positive_claim_requires": "observed mean I exceeds p95 of additive-reconstruction null with measured no-op noise",
+  "selection_rule": "fixed-priority C0 -> C1 -> C2 -> C3 after hard validity guards; effect size, sign, significance, and p-values are excluded from selection",
+  "confirmation_rule": "confirm the selected candidate once on hidden_confirmation without reselection; a dev-supported directional claim requires same sign and absolute effect >= 0.01 on the confirmation split",
+  "guards": [
+    {"name": "noop_abs_progress_median", "operator": "lte", "threshold": 0.001},
+    {"name": "noop_abs_progress_p99", "operator": "lte", "threshold": 0.005},
+    {"name": "repeat_final_distance_median", "operator": "lte", "threshold": 0.0001},
+    {"name": "repeat_top_action_equivalence_agreement", "operator": "gte", "threshold": 0.99},
+    {"name": "settle_convergence_rate", "operator": "gte", "threshold": 0.95},
+    {"name": "persistent_invalid_state_table_rate", "operator": "lte", "threshold": 0.02},
+    {"name": "factor_dependent_invalidity_gap", "operator": "lte", "threshold": 0.02},
+    {"name": "task_dependent_invalidity_gap", "operator": "lte", "threshold": 0.02}
+  ]
 }

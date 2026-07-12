@@ -1,0 +1,3840 @@
+From 8985575dc9f44d7dfccff6a66e4ad0b317e8855e Mon Sep 17 00:00:00 2001
+From: root
+ <root@main-wsp-ebkmyljbom6l-0.headlesssvc-wsp-ebkmyljbom6l.vessl-agent.svc.cluster.local>
+Date: Sun, 12 Jul 2026 05:00:31 +0000
+Subject: [PATCH] Finalize Ralphthon Track 1 pilot pipeline
+
+---
+ paper/icml2026/algorithm.sty         |   79 ++
+ paper/icml2026/algorithmic.sty       |  201 ++++
+ paper/icml2026/fancyhdr.sty          |  864 +++++++++++++++
+ paper/icml2026/icml2026.bst          | 1443 ++++++++++++++++++++++++++
+ paper/icml2026/icml2026.sty          |  767 ++++++++++++++
+ paper/icml2026/wvh_paper.tex         |  294 ++++++
+ scripts/where_vs_how_analysis.py     |   18 +
+ scripts/where_vs_how_package.py      |    3 +-
+ scripts/where_vs_how_paper.py        |   13 +-
+ scripts/where_vs_how_retry_driver.py |   20 +-
+ 10 files changed, 3696 insertions(+), 6 deletions(-)
+ create mode 100644 paper/icml2026/algorithm.sty
+ create mode 100644 paper/icml2026/algorithmic.sty
+ create mode 100644 paper/icml2026/fancyhdr.sty
+ create mode 100644 paper/icml2026/icml2026.bst
+ create mode 100644 paper/icml2026/icml2026.sty
+ create mode 100644 paper/icml2026/wvh_paper.tex
+
+diff --git a/paper/icml2026/algorithm.sty b/paper/icml2026/algorithm.sty
+new file mode 100644
+index 0000000..843e3d5
+--- /dev/null
++++ b/paper/icml2026/algorithm.sty
+@@ -0,0 +1,79 @@
++% ALGORITHM STYLE -- Released 8 April 1996
++%    for LaTeX-2e
++% Copyright -- 1994 Peter Williams
++% E-mail Peter.Williams@dsto.defence.gov.au
++\NeedsTeXFormat{LaTeX2e}
++\ProvidesPackage{algorithm}
++\typeout{Document Style `algorithm' - floating environment}
++
++\RequirePackage{float}
++\RequirePackage{ifthen}
++\newcommand{\ALG@within}{nothing}
++\newboolean{ALG@within}
++\setboolean{ALG@within}{false}
++\newcommand{\ALG@floatstyle}{ruled}
++\newcommand{\ALG@name}{Algorithm}
++\newcommand{\listalgorithmname}{List of \ALG@name s}
++
++% Declare Options
++% first appearance
++\DeclareOption{plain}{
++  \renewcommand{\ALG@floatstyle}{plain}
++}
++\DeclareOption{ruled}{
++  \renewcommand{\ALG@floatstyle}{ruled}
++}
++\DeclareOption{boxed}{
++  \renewcommand{\ALG@floatstyle}{boxed}
++}
++% then numbering convention
++\DeclareOption{part}{
++  \renewcommand{\ALG@within}{part}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption{chapter}{
++  \renewcommand{\ALG@within}{chapter}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption{section}{
++  \renewcommand{\ALG@within}{section}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption{subsection}{
++  \renewcommand{\ALG@within}{subsection}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption{subsubsection}{
++  \renewcommand{\ALG@within}{subsubsection}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption{nothing}{
++  \renewcommand{\ALG@within}{nothing}
++  \setboolean{ALG@within}{true}
++}
++\DeclareOption*{\edef\ALG@name{\CurrentOption}}
++
++% ALGORITHM
++%
++\ProcessOptions
++\floatstyle{\ALG@floatstyle}
++\ifthenelse{\boolean{ALG@within}}{
++  \ifthenelse{\equal{\ALG@within}{part}}
++     {\newfloat{algorithm}{htbp}{loa}[part]}{}
++  \ifthenelse{\equal{\ALG@within}{chapter}}
++     {\newfloat{algorithm}{htbp}{loa}[chapter]}{}
++  \ifthenelse{\equal{\ALG@within}{section}}
++     {\newfloat{algorithm}{htbp}{loa}[section]}{}
++  \ifthenelse{\equal{\ALG@within}{subsection}}
++     {\newfloat{algorithm}{htbp}{loa}[subsection]}{}
++  \ifthenelse{\equal{\ALG@within}{subsubsection}}
++     {\newfloat{algorithm}{htbp}{loa}[subsubsection]}{}
++  \ifthenelse{\equal{\ALG@within}{nothing}}
++     {\newfloat{algorithm}{htbp}{loa}}{}
++}{
++  \newfloat{algorithm}{htbp}{loa}
++}
++\floatname{algorithm}{\ALG@name}
++
++\newcommand{\listofalgorithms}{\listof{algorithm}{\listalgorithmname}}
++
+diff --git a/paper/icml2026/algorithmic.sty b/paper/icml2026/algorithmic.sty
+new file mode 100644
+index 0000000..ad61478
+--- /dev/null
++++ b/paper/icml2026/algorithmic.sty
+@@ -0,0 +1,201 @@
++% ALGORITHMIC STYLE -- Released 8 APRIL 1996
++%    for LaTeX version 2e
++% Copyright -- 1994 Peter Williams
++% E-mail PeterWilliams@dsto.defence.gov.au
++%
++% Modified by Alex Smola (08/2000)
++% E-mail Alex.Smola@anu.edu.au
++%
++\NeedsTeXFormat{LaTeX2e}
++\ProvidesPackage{algorithmic}
++\typeout{Document Style `algorithmic' - environment}
++%
++\RequirePackage{ifthen}
++\RequirePackage{calc}
++\newboolean{ALC@noend}
++\setboolean{ALC@noend}{false}
++\newcounter{ALC@line}
++\newcounter{ALC@rem}
++\newlength{\ALC@tlm}
++%
++\DeclareOption{noend}{\setboolean{ALC@noend}{true}}
++%
++\ProcessOptions
++%
++% ALGORITHMIC
++\newcommand{\algorithmicrequire}{\textbf{Require:}}
++\newcommand{\algorithmicensure}{\textbf{Ensure:}}
++\newcommand{\algorithmiccomment}[1]{\{#1\}}
++\newcommand{\algorithmicend}{\textbf{end}}
++\newcommand{\algorithmicif}{\textbf{if}}
++\newcommand{\algorithmicthen}{\textbf{then}}
++\newcommand{\algorithmicelse}{\textbf{else}}
++\newcommand{\algorithmicelsif}{\algorithmicelse\ \algorithmicif}
++\newcommand{\algorithmicendif}{\algorithmicend\ \algorithmicif}
++\newcommand{\algorithmicfor}{\textbf{for}}
++\newcommand{\algorithmicforall}{\textbf{for all}}
++\newcommand{\algorithmicdo}{\textbf{do}}
++\newcommand{\algorithmicendfor}{\algorithmicend\ \algorithmicfor}
++\newcommand{\algorithmicwhile}{\textbf{while}}
++\newcommand{\algorithmicendwhile}{\algorithmicend\ \algorithmicwhile}
++\newcommand{\algorithmicloop}{\textbf{loop}}
++\newcommand{\algorithmicendloop}{\algorithmicend\ \algorithmicloop}
++\newcommand{\algorithmicrepeat}{\textbf{repeat}}
++\newcommand{\algorithmicuntil}{\textbf{until}}
++
++%changed by alex smola
++\newcommand{\algorithmicinput}{\textbf{input}}
++\newcommand{\algorithmicoutput}{\textbf{output}}
++\newcommand{\algorithmicset}{\textbf{set}}
++\newcommand{\algorithmictrue}{\textbf{true}}
++\newcommand{\algorithmicfalse}{\textbf{false}}
++\newcommand{\algorithmicand}{\textbf{and\ }}
++\newcommand{\algorithmicor}{\textbf{or\ }}
++\newcommand{\algorithmicfunction}{\textbf{function}}
++\newcommand{\algorithmicendfunction}{\algorithmicend\ \algorithmicfunction}
++\newcommand{\algorithmicmain}{\textbf{main}}
++\newcommand{\algorithmicendmain}{\algorithmicend\ \algorithmicmain}
++%end changed by alex smola
++
++\def\ALC@item[#1]{%
++\if@noparitem \@donoparitem
++  \else \if@inlabel \indent \par \fi
++         \ifhmode \unskip\unskip \par \fi
++         \if@newlist \if@nobreak \@nbitem \else
++                        \addpenalty\@beginparpenalty
++                        \addvspace\@topsep \addvspace{-\parskip}\fi
++           \else \addpenalty\@itempenalty \addvspace\itemsep
++          \fi
++    \global\@inlabeltrue
++\fi
++\everypar{\global\@minipagefalse\global\@newlistfalse
++          \if@inlabel\global\@inlabelfalse \hskip -\parindent \box\@labels
++             \penalty\z@ \fi
++          \everypar{}}\global\@nobreakfalse
++\if@noitemarg \@noitemargfalse \if@nmbrlist \refstepcounter{\@listctr}\fi \fi
++\sbox\@tempboxa{\makelabel{#1}}%
++\global\setbox\@labels
++ \hbox{\unhbox\@labels \hskip \itemindent
++       \hskip -\labelwidth \hskip -\ALC@tlm
++       \ifdim \wd\@tempboxa >\labelwidth
++                \box\@tempboxa
++          \else \hbox to\labelwidth {\unhbox\@tempboxa}\fi
++       \hskip \ALC@tlm}\ignorespaces}
++%
++\newenvironment{algorithmic}[1][0]{
++\let\@item\ALC@item
++  \newcommand{\ALC@lno}{%
++\ifthenelse{\equal{\arabic{ALC@rem}}{0}}
++{{\footnotesize \arabic{ALC@line}:}}{}%
++}
++\let\@listii\@listi
++\let\@listiii\@listi
++\let\@listiv\@listi
++\let\@listv\@listi
++\let\@listvi\@listi
++\let\@listvii\@listi
++  \newenvironment{ALC@g}{
++    \begin{list}{\ALC@lno}{ \itemsep\z@ \itemindent\z@
++    \listparindent\z@ \rightmargin\z@ 
++    \topsep\z@ \partopsep\z@ \parskip\z@\parsep\z@
++    \leftmargin 1em
++    \addtolength{\ALC@tlm}{\leftmargin}
++    }
++  }
++  {\end{list}}
++  \newcommand{\ALC@it}{\addtocounter{ALC@line}{1}\addtocounter{ALC@rem}{1}\ifthenelse{\equal{\arabic{ALC@rem}}{#1}}{\setcounter{ALC@rem}{0}}{}\item}
++  \newcommand{\ALC@com}[1]{\ifthenelse{\equal{##1}{default}}%
++{}{\ \algorithmiccomment{##1}}}
++  \newcommand{\REQUIRE}{\item[\algorithmicrequire]}
++  \newcommand{\ENSURE}{\item[\algorithmicensure]}
++  \newcommand{\STATE}{\ALC@it}
++  \newcommand{\COMMENT}[1]{\algorithmiccomment{##1}}
++%changes by alex smola
++  \newcommand{\INPUT}{\item[\algorithmicinput]}
++  \newcommand{\OUTPUT}{\item[\algorithmicoutput]}
++  \newcommand{\SET}{\item[\algorithmicset]}
++%  \newcommand{\TRUE}{\algorithmictrue}
++%  \newcommand{\FALSE}{\algorithmicfalse}
++  \newcommand{\AND}{\algorithmicand}
++  \newcommand{\OR}{\algorithmicor}
++  \newenvironment{ALC@func}{\begin{ALC@g}}{\end{ALC@g}}
++  \newenvironment{ALC@main}{\begin{ALC@g}}{\end{ALC@g}}
++%end changes by alex smola
++  \newenvironment{ALC@if}{\begin{ALC@g}}{\end{ALC@g}}
++  \newenvironment{ALC@for}{\begin{ALC@g}}{\end{ALC@g}}
++  \newenvironment{ALC@whl}{\begin{ALC@g}}{\end{ALC@g}}
++  \newenvironment{ALC@loop}{\begin{ALC@g}}{\end{ALC@g}}
++  \newenvironment{ALC@rpt}{\begin{ALC@g}}{\end{ALC@g}}
++  \renewcommand{\\}{\@centercr}
++  \newcommand{\IF}[2][default]{\ALC@it\algorithmicif\ ##2\ \algorithmicthen%
++\ALC@com{##1}\begin{ALC@if}}
++  \newcommand{\SHORTIF}[2]{\ALC@it\algorithmicif\ ##1\
++    \algorithmicthen\ {##2}}
++  \newcommand{\ELSE}[1][default]{\end{ALC@if}\ALC@it\algorithmicelse%
++\ALC@com{##1}\begin{ALC@if}}
++  \newcommand{\ELSIF}[2][default]%
++{\end{ALC@if}\ALC@it\algorithmicelsif\ ##2\ \algorithmicthen%
++\ALC@com{##1}\begin{ALC@if}}
++  \newcommand{\FOR}[2][default]{\ALC@it\algorithmicfor\ ##2\ \algorithmicdo%
++\ALC@com{##1}\begin{ALC@for}}
++  \newcommand{\FORALL}[2][default]{\ALC@it\algorithmicforall\ ##2\ %
++\algorithmicdo%
++\ALC@com{##1}\begin{ALC@for}}
++  \newcommand{\SHORTFORALL}[2]{\ALC@it\algorithmicforall\ ##1\ %
++    \algorithmicdo\ {##2}}
++  \newcommand{\WHILE}[2][default]{\ALC@it\algorithmicwhile\ ##2\ %
++\algorithmicdo%
++\ALC@com{##1}\begin{ALC@whl}}
++  \newcommand{\LOOP}[1][default]{\ALC@it\algorithmicloop%
++\ALC@com{##1}\begin{ALC@loop}}
++%changed by alex smola
++  \newcommand{\FUNCTION}[2][default]{\ALC@it\algorithmicfunction\ ##2\ %
++    \ALC@com{##1}\begin{ALC@func}}
++  \newcommand{\MAIN}[2][default]{\ALC@it\algorithmicmain\ ##2\ %
++    \ALC@com{##1}\begin{ALC@main}}
++%end changed by alex smola
++  \newcommand{\REPEAT}[1][default]{\ALC@it\algorithmicrepeat%
++    \ALC@com{##1}\begin{ALC@rpt}}
++    \newcommand{\UNTIL}[1]{\end{ALC@rpt}\ALC@it\algorithmicuntil\ ##1}
++  \ifthenelse{\boolean{ALC@noend}}{
++    \newcommand{\ENDIF}{\end{ALC@if}}
++    \newcommand{\ENDFOR}{\end{ALC@for}}
++    \newcommand{\ENDWHILE}{\end{ALC@whl}}
++    \newcommand{\ENDLOOP}{\end{ALC@loop}}
++    \newcommand{\ENDFUNCTION}{\end{ALC@func}}
++    \newcommand{\ENDMAIN}{\end{ALC@main}}
++  }{
++    \newcommand{\ENDIF}{\end{ALC@if}\ALC@it\algorithmicendif}
++    \newcommand{\ENDFOR}{\end{ALC@for}\ALC@it\algorithmicendfor}
++    \newcommand{\ENDWHILE}{\end{ALC@whl}\ALC@it\algorithmicendwhile}
++    \newcommand{\ENDLOOP}{\end{ALC@loop}\ALC@it\algorithmicendloop}
++    \newcommand{\ENDFUNCTION}{\end{ALC@func}\ALC@it\algorithmicendfunction}
++    \newcommand{\ENDMAIN}{\end{ALC@main}\ALC@it\algorithmicendmain}
++  } 
++  \renewcommand{\@toodeep}{}
++  \begin{list}{\ALC@lno}{\setcounter{ALC@line}{0}\setcounter{ALC@rem}{0}%
++      \itemsep\z@ \itemindent\z@ \listparindent\z@%
++      \partopsep\z@ \parskip\z@ \parsep\z@%
++      \labelsep 0.5em \topsep 0.2em%
++      \ifthenelse{\equal{#1}{0}}
++      {\labelwidth 0.5em }
++      {\labelwidth  1.2em }
++      \leftmargin\labelwidth \addtolength{\leftmargin}{\labelsep}
++      \ALC@tlm\labelsep
++      }
++    }
++  {\end{list}}
++
++
++
++
++
++
++
++
++
++
++
++
++
++
+diff --git a/paper/icml2026/fancyhdr.sty b/paper/icml2026/fancyhdr.sty
+new file mode 100644
+index 0000000..b3d811f
+--- /dev/null
++++ b/paper/icml2026/fancyhdr.sty
+@@ -0,0 +1,864 @@
++%%
++%% This is file `fancyhdr.sty',
++%% generated with the docstrip utility.
++%%
++%% The original source files were:
++%%
++%% fancyhdr.dtx  (with options: `fancyhdr')
++%% 
++%% This is a generated file.
++%% 
++%% This file may be distributed and/or modified under the conditions of
++%% the LaTeX Project Public License, either version 1.3 of this license
++%% or (at your option) any later version.  The latest version of this
++%% license is in:
++%% 
++%%    http://www.latex-project.org/lppl.txt
++%% 
++%% and version 1.3 or later is part of all distributions of LaTeX version
++%% 2005/12/01 or later.
++%% 
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++\NeedsTeXFormat{LaTeX2e}[2018-04-01]
++\ProvidesPackage{fancyhdr}%
++           [2025/02/07 v5.2
++                  Extensive control of page headers and footers]%
++% Copyright (C) 1994-2025 by Pieter van Oostrum <pieter@vanoostrum.org>
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++\ifdefined\NewDocumentCommand\else\RequirePackage{xparse}\fi
++\newif\iff@nch@check
++\f@nch@checktrue
++\DeclareOption{nocheck}{%
++  \f@nch@checkfalse
++}
++\let\f@nch@gbl\relax
++\newif\iff@nch@compatViii
++\DeclareOption{compatV3}{%
++  \PackageWarningNoLine{fancyhdr}{The `compatV3' option is deprecated.\MessageBreak
++    It will disappear in one of the following releases.\MessageBreak
++    Please change your document to work\MessageBreak
++    without this option}
++  \let\f@nch@gbl\global
++  \f@nch@compatViiitrue
++}
++\newif\iff@nch@twoside
++\f@nch@twosidefalse
++\DeclareOption{twoside}{%
++  \if@twoside\else\f@nch@twosidetrue\fi
++}
++\newcommand\f@nch@def[2]{%
++  \def\temp@a{#2}\ifx\temp@a\@empty\f@nch@gbl\def#1{}%
++                 \else\f@nch@gbl\def#1{#2\strut}\fi}
++\DeclareOption{myheadings}{%
++  \@ifundefined{chapter}{%
++    \def\ps@myheadings{\ps@f@nch@fancyproto \let\@mkboth\@gobbletwo
++      \fancyhf{}
++      \fancyhead[LE,RO]{\thepage}%
++      \fancyhead[RE]{\slshape\leftmark}%
++      \fancyhead[LO]{\slshape\rightmark}%
++      \let\sectionmark\@gobble
++      \let\subsectionmark\@gobble
++    }%
++  }%
++  {\def\ps@myheadings{\ps@f@nch@fancyproto \let\@mkboth\@gobbletwo
++      \fancyhf{}
++      \fancyhead[LE,RO]{\thepage}%
++      \fancyhead[RE]{\slshape\leftmark}%
++      \fancyhead[LO]{\slshape\rightmark}%
++      \let\chaptermark\@gobble
++      \let\sectionmark\@gobble
++    }%
++  }%
++}
++\DeclareOption{headings}{%
++  \@ifundefined{chapter}{%
++    \if@twoside
++      \def\ps@headings{\ps@f@nch@fancyproto \def\@mkboth{\protect\markboth}
++        \fancyhf{}
++        \fancyhead[LE,RO]{\thepage}%
++        \fancyhead[RE]{\slshape\leftmark}%
++        \fancyhead[LO]{\slshape\rightmark}%
++        \def\sectionmark##1{%
++          \markboth{\MakeUppercase{%
++            \ifnum \c@secnumdepth >\z@ \thesection\quad \fi##1}}{}}%
++        \def\subsectionmark##1{%
++          \markright{%
++            \ifnum \c@secnumdepth >\@ne \thesubsection\quad \fi##1}}%
++      }%
++    \else
++      \def\ps@headings{\ps@f@nch@fancyproto \def\@mkboth{\protect\markboth}
++        \fancyhf{}
++        \fancyhead[LE,RO]{\thepage}%
++        \fancyhead[RE]{\slshape\leftmark}%
++        \fancyhead[LO]{\slshape\rightmark}%
++        \def\sectionmark##1{%
++          \markright {\MakeUppercase{%
++            \ifnum \c@secnumdepth >\z@ \thesection\quad \fi##1}}}%
++        \let\subsectionmark\@gobble % Not needed but inserted for safety
++      }%
++    \fi
++  }{\if@twoside
++      \def\ps@headings{\ps@f@nch@fancyproto \def\@mkboth{\protect\markboth}
++        \fancyhf{}
++        \fancyhead[LE,RO]{\thepage}%
++        \fancyhead[RE]{\slshape\leftmark}%
++        \fancyhead[LO]{\slshape\rightmark}%
++        \def\chaptermark##1{%
++          \markboth{\MakeUppercase{%
++            \ifnum \c@secnumdepth >\m@ne \if@mainmatter
++              \@chapapp\ \thechapter. \ \fi\fi##1}}{}}%
++        \def\sectionmark##1{%
++          \markright {\MakeUppercase{%
++            \ifnum \c@secnumdepth >\z@ \thesection. \ \fi##1}}}%
++      }%
++    \else
++      \def\ps@headings{\ps@f@nch@fancyproto \def\@mkboth{\protect\markboth}
++        \fancyhf{}
++        \fancyhead[LE,RO]{\thepage}%
++        \fancyhead[RE]{\slshape\leftmark}%
++        \fancyhead[LO]{\slshape\rightmark}%
++        \def\chaptermark##1{%
++          \markright{\MakeUppercase{%
++            \ifnum \c@secnumdepth >\m@ne \if@mainmatter
++              \@chapapp\ \thechapter. \ \fi\fi##1}}}%
++        \let\sectionmark\@gobble % Not needed but inserted for safety
++      }%
++    \fi
++  }%
++}
++\ProcessOptions*
++\newcommand{\f@nch@forc}[3]{\expandafter\f@nchf@rc\expandafter#1\expandafter{#2}{#3}}
++\newcommand{\f@nchf@rc}[3]{\def\temp@ty{#2}\ifx\@empty\temp@ty\else
++                                    \f@nch@rc#1#2\f@nch@rc{#3}\fi}
++\long\def\f@nch@rc#1#2#3\f@nch@rc#4{\def#1{#2}#4\f@nchf@rc#1{#3}{#4}}
++\newcommand{\f@nch@for}[3]{\edef\@fortmp{#2}%
++  \expandafter\@forloop#2,\@nil,\@nil\@@#1{#3}}
++\newcommand\f@nch@default[3]{%
++  \edef\temp@a{\lowercase{\edef\noexpand\temp@a{#3}}}\temp@a \def#1{}%
++  \f@nch@forc\tmpf@ra{#2}%
++  {\expandafter\f@nch@ifin\tmpf@ra\temp@a{\edef#1{#1\tmpf@ra}}{}}%
++  \ifx\@empty#1\def#1{#2}\fi}
++\newcommand{\f@nch@ifin}[4]{%
++  \edef\temp@a{#2}\def\temp@b##1#1##2\temp@b{\def\temp@b{##1}}%
++  \expandafter\temp@b#2#1\temp@b\ifx\temp@a\temp@b #4\else #3\fi}
++\newcommand{\fancyhead}[2][]{\f@nch@fancyhf\fancyhead h[#1]{#2}}%
++\newcommand{\fancyfoot}[2][]{\f@nch@fancyhf\fancyfoot f[#1]{#2}}%
++\newcommand{\fancyhf}[2][]{\f@nch@fancyhf\fancyhf {}[#1]{#2}}%
++\newcommand{\fancyheadoffset}[2][]{\f@nch@fancyhfoffs\fancyheadoffset h[#1]{#2}}%
++\newcommand{\fancyfootoffset}[2][]{\f@nch@fancyhfoffs\fancyfootoffset f[#1]{#2}}%
++\newcommand{\fancyhfoffset}[2][]{\f@nch@fancyhfoffs\fancyhfoffset {}[#1]{#2}}%
++\def\f@nch@fancyhf@Echeck#1{%
++  \if@twoside\else
++    \iff@nch@twoside\else
++      \if\f@nch@@eo e%
++        \PackageWarning{fancyhdr} {\string#1's `E' option without twoside option is useless.\MessageBreak
++          Please consider using the `twoside' option}%
++  \fi\fi\fi
++}
++\long\def\f@nch@fancyhf#1#2[#3]#4{%
++  \def\temp@c{}%
++  \f@nch@forc\tmpf@ra{#3}%
++  {\expandafter\f@nch@ifin\tmpf@ra{eolcrhf,EOLCRHF}%
++    {}{\edef\temp@c{\temp@c\tmpf@ra}}}%
++  \ifx\@empty\temp@c\else \PackageError{fancyhdr}{Illegal char `\temp@c' in
++    \string#1 argument: [#3]}{}%
++  \fi \f@nch@for\temp@c{#3}%
++  {\f@nch@default\f@nch@@eo{eo}\temp@c
++    \f@nch@fancyhf@Echeck{#1}%
++    \f@nch@default\f@nch@@lcr{lcr}\temp@c
++    \f@nch@default\f@nch@@hf{hf}{#2\temp@c}%
++    \f@nch@forc\f@nch@eo\f@nch@@eo
++        {\f@nch@forc\f@nch@lcr\f@nch@@lcr
++          {\f@nch@forc\f@nch@hf\f@nch@@hf
++            {\expandafter\f@nch@def\csname
++              f@nch@\f@nch@eo\f@nch@lcr\f@nch@hf\endcsname {#4}}}}}}
++\def\f@nch@fancyhfoffs#1#2[#3]#4{%
++  \def\temp@c{}%
++  \f@nch@forc\tmpf@ra{#3}%
++  {\expandafter\f@nch@ifin\tmpf@ra{eolrhf,EOLRHF}%
++    {}{\edef\temp@c{\temp@c\tmpf@ra}}}%
++  \ifx\@empty\temp@c\else \PackageError{fancyhdr}{Illegal char `\temp@c' in
++    \string#1 argument: [#3]}{}%
++  \fi \f@nch@for\temp@c{#3}%
++  {\f@nch@default\f@nch@@eo{eo}\temp@c
++    \f@nch@fancyhf@Echeck{#1}%
++    \f@nch@default\f@nch@@lcr{lr}\temp@c
++    \f@nch@default\f@nch@@hf{hf}{#2\temp@c}%
++    \f@nch@forc\f@nch@eo\f@nch@@eo
++        {\f@nch@forc\f@nch@lcr\f@nch@@lcr
++          {\f@nch@forc\f@nch@hf\f@nch@@hf
++            {\expandafter\setlength\csname
++              f@nch@offset@\f@nch@eo\f@nch@lcr\f@nch@hf\endcsname {#4}}}}}%
++  \f@nch@setoffs}
++\NewDocumentCommand {\fancyheadwidth}{ s O{} O{} m }
++                      {\f@nch@fancyhfwidth{#1}\fancyheadwidth h[#2][#3]{#4}}%
++\NewDocumentCommand {\fancyfootwidth}{ s O{} O{} m }
++                      {\f@nch@fancyhfwidth{#1}\fancyfootwidth f[#2][#3]{#4}}%
++\NewDocumentCommand {\fancyhfwidth}  { s O{} O{} m }
++                      {\f@nch@fancyhfwidth{#1}\fancyhfwidth  {}[#2][#3]{#4}}%
++\def\f@nch@fancyhfwidth#1#2#3[#4][#5]#6{%
++  \setlength\@tempdima{#6}%
++  \def\temp@c{}%
++  \f@nch@forc\tmpf@ra{#4}%
++  {\expandafter\f@nch@ifin\tmpf@ra{eolcrhf,EOLCRHF}%
++    {}{\edef\temp@c{\temp@c\tmpf@ra}}}%
++  \ifx\@empty\temp@c\else \PackageError{fancyhdr}{Illegal char `\temp@c' in
++    \string#2 argument: [#4]}{}%
++  \fi
++  \f@nch@for\temp@c{#4}%
++  {\f@nch@default\f@nch@@eo{eo}\temp@c
++    \f@nch@fancyhf@Echeck{#2}%
++    \f@nch@default\f@nch@@lcr{lcr}\temp@c
++    \f@nch@default\f@nch@@hf{hf}{#3\temp@c}%
++    \f@nch@forc\f@nch@eo\f@nch@@eo
++        {\f@nch@forc\f@nch@lcr\f@nch@@lcr
++          {\f@nch@forc\f@nch@hf\f@nch@@hf
++            {%
++              \IfBooleanTF{#1}{%
++                \expandafter\edef\csname
++                  f@nch@width@\f@nch@eo\f@nch@lcr\f@nch@hf\endcsname{\the\@tempdima}%
++              }%
++              {%
++                \expandafter\def\csname
++                  f@nch@width@\f@nch@eo\f@nch@lcr\f@nch@hf\endcsname{#6}%
++              }%
++              \csname f@nchdrwdt@align@v@\f@nch@hf\endcsname
++              \edef\f@nch@align@@h{\f@nch@lcr}%
++              \def\temp@a{#5}%
++              \ifx\temp@a\@empty \else \f@nchdrwdt@align#5\@nil{#2}\fi
++              \expandafter\edef\csname
++                f@nch@align@\f@nch@eo\f@nch@lcr\f@nch@hf\endcsname
++                   {\f@nch@align@@v\f@nch@align@@h}}}}}}
++\def\f@nch@width@elh{\headwidth}
++\def\f@nch@width@ech{\headwidth}
++\def\f@nch@width@erh{\headwidth}
++\def\f@nch@width@olh{\headwidth}
++\def\f@nch@width@och{\headwidth}
++\def\f@nch@width@orh{\headwidth}
++\def\f@nch@width@elf{\headwidth}
++\def\f@nch@width@ecf{\headwidth}
++\def\f@nch@width@erf{\headwidth}
++\def\f@nch@width@olf{\headwidth}
++\def\f@nch@width@ocf{\headwidth}
++\def\f@nch@width@orf{\headwidth}
++\def\f@nch@align@elh{bl}
++\def\f@nch@align@ech{bc}
++\def\f@nch@align@erh{br}
++\def\f@nch@align@olh{bl}
++\def\f@nch@align@och{bc}
++\def\f@nch@align@orh{br}
++\def\f@nch@align@elf{tl}
++\def\f@nch@align@ecf{tc}
++\def\f@nch@align@erf{tr}
++\def\f@nch@align@olf{tl}
++\def\f@nch@align@ocf{tc}
++\def\f@nch@align@orf{tr}
++\def\f@nchdrwdt@align@v@h{\def\f@nch@align@@v{b}}%
++\def\f@nchdrwdt@align@v@f{\def\f@nch@align@@v{t}}%
++\long\def\f@nchdrwdt@align#1#2\@nil#3{%
++  \f@nch@ifin{#1}{TtcbB-}{%
++    \f@nch@ifin{#1}{-}{}{\def\f@nch@align@@v{#1}}%
++    \def\@tempa{#2}%
++    \ifx\@tempa\@empty \else \def\f@nch@align@@h{#2}\fi
++  }%
++  {\def\f@nch@align@@h{#1}}%
++  \expandafter\f@nch@ifin\expandafter{\f@nch@align@@h}{lcrj}{}%
++    {\PackageError{fancyhdr}
++                  {\string#3: Illegal char `\f@nch@align@@h'\MessageBreak
++                              in alignment argument}{}}%
++}
++\newcommand{\lhead}[2][\f@nch@olh]%
++                     {\f@nch@def\f@nch@olh{#2}\f@nch@def\f@nch@elh{#1}}
++\newcommand{\chead}[2][\f@nch@och]%
++                     {\f@nch@def\f@nch@och{#2}\f@nch@def\f@nch@ech{#1}}
++\newcommand{\rhead}[2][\f@nch@orh]%
++                     {\f@nch@def\f@nch@orh{#2}\f@nch@def\f@nch@erh{#1}}
++\newcommand{\lfoot}[2][\f@nch@olf]%
++                     {\f@nch@def\f@nch@olf{#2}\f@nch@def\f@nch@elf{#1}}
++\newcommand{\cfoot}[2][\f@nch@ocf]%
++                     {\f@nch@def\f@nch@ocf{#2}\f@nch@def\f@nch@ecf{#1}}
++\newcommand{\rfoot}[2][\f@nch@orf]%
++                     {\f@nch@def\f@nch@orf{#2}\f@nch@def\f@nch@erf{#1}}
++\newlength{\f@nch@headwidth} \let\headwidth\f@nch@headwidth
++\newlength{\f@nch@offset@elh}
++\newlength{\f@nch@offset@erh}
++\newlength{\f@nch@offset@olh}
++\newlength{\f@nch@offset@orh}
++\newlength{\f@nch@offset@elf}
++\newlength{\f@nch@offset@erf}
++\newlength{\f@nch@offset@olf}
++\newlength{\f@nch@offset@orf}
++\newcommand{\headrulewidth}{0.4pt}
++\newcommand{\footrulewidth}{0pt}
++\@ifundefined{headruleskip}%
++      {\newcommand{\headruleskip}{0pt}}{}
++\@ifundefined{footruleskip}%
++      {\newcommand{\footruleskip}{.3\normalbaselineskip}}{}
++\newcommand{\plainheadrulewidth}{0pt}
++\newcommand{\plainfootrulewidth}{0pt}
++\newif\if@fancyplain \@fancyplainfalse
++\def\fancyplain#1#2{\if@fancyplain#1\else#2\fi}
++\headwidth=-123456789sp
++\let\f@nch@raggedleft\raggedleft
++\let\f@nch@raggedright\raggedright
++\let\f@nch@centering\centering
++\let\f@nch@everypar\everypar
++\ifdefined\ExplSyntaxOn
++  \ExplSyntaxOn
++  \providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
++  \IfFormatAtLeastTF{2021-06-01}{
++    \def\f@nch@saveclr@parhook #1{
++      \expandafter\let\csname f@nch@__hook~#1\expandafter\endcsname
++                      \csname __hook~#1\endcsname
++      \expandafter\let\csname f@nch@__hook_toplevel~#1\expandafter\endcsname
++                      \csname __hook_toplevel~#1\endcsname
++      \expandafter\let\csname f@nch@__hook_next~#1\expandafter\endcsname
++                      \csname __hook_next~#1\endcsname
++      \expandafter\let\csname f@nch@g__hook_#1_code_prop\expandafter\endcsname
++                      \csname g__hook_#1_code_prop\endcsname
++      \RemoveFromHook{#1}[*]
++      \ClearHookNext{#1}
++    }
++    \def\f@nch@restore@parhook #1{
++      \global\expandafter\let\csname __hook~#1\expandafter\endcsname
++                             \csname f@nch@__hook~#1\endcsname
++      \global\expandafter\let\csname __hook_toplevel~#1\expandafter\endcsname
++                             \csname f@nch@__hook_toplevel~#1\endcsname
++      \global\expandafter\let\csname __hook_next~#1\expandafter\endcsname
++                             \csname f@nch@__hook_next~#1\endcsname
++      \global\expandafter\let\csname g__hook_#1_code_prop\expandafter\endcsname
++                             \csname f@nch@g__hook_#1_code_prop\endcsname
++    }
++    \def\f@nch@resetpar{
++      \f@nch@everypar{}
++      \f@nch@saveclr@parhook{para/before}
++      \f@nch@saveclr@parhook{para/begin}
++      \f@nch@saveclr@parhook{para/end}
++      \f@nch@saveclr@parhook{para/after}
++    }
++    \def\f@nch@restorepar{
++      \f@nch@restore@parhook{para/before}
++      \f@nch@restore@parhook{para/begin}
++      \f@nch@restore@parhook{para/end}
++      \f@nch@restore@parhook{para/after}
++    }
++  }{
++    \def\f@nch@resetpar{
++      \f@nch@everypar{}
++    }
++    \def\f@nch@restorepar{}
++  }
++  \ExplSyntaxOff
++\else
++  \def\f@nch@resetpar{%
++    \f@nch@everypar{}%
++  }
++  \def\f@nch@restorepar{}
++\fi
++\newcommand\f@nch@noUppercase[2][]{#2}
++\def\f@nch@reset{\f@nch@resetpar\restorecr\endlinechar=13
++  \catcode`\\=0\catcode`\{=1\catcode`\}=2\catcode`\$=3\catcode`\&=4
++  \catcode`\#=6\catcode`\^=7\catcode`\_=8\catcode`\ =10\catcode`\@=11
++  \catcode`\:=11\catcode`\~=13\catcode`\%=14
++  \catcode0=15 %NULL
++  \catcode9=10 %TAB
++  \let\\\@normalcr \let\raggedleft\f@nch@raggedleft
++  \let\raggedright\f@nch@raggedright \let\centering\f@nch@centering
++  \def\baselinestretch{1}%
++  \hsize=\headwidth
++  \def\nouppercase##1{{%
++      \let\uppercase\relax\let\MakeUppercase\f@nch@noUppercase
++      \expandafter\let\csname MakeUppercase \endcsname\relax
++      \expandafter\def\csname MakeUppercase\space\space\space\endcsname
++                                                   [####1]####2{####2}%
++      ##1}}%
++  \@ifundefined{@normalsize} {\normalsize} % for ucthesis.cls
++   {\@normalsize}%
++  }
++\newcommand*{\fancycenter}[1][1em]{%
++  \@ifnextchar[{\f@nch@center{#1}}{\f@nch@center{#1}[3]}%
++}
++\def\f@nch@center#1[#2]#3#4#5{%
++  \def\@tempa{#4}\ifx\@tempa\@empty
++    \hbox to\linewidth{\color@begingroup{#3}\hfil {#5}\color@endgroup}%
++  \else
++    \setlength\@tempdima{#1}%
++    \setlength{\@tempdimb}{#2\@tempdima}%
++    \@tempdimc \@tempdimb \advance\@tempdimc -\@tempdima
++    \setlength\@tempskipa{\@tempdimb \@plus 1fil \@minus \@tempdimc}%
++    \@tempskipb\@tempskipa
++    \def\@tempa{#3}\ifx\@tempa\@empty
++      \addtolength\@tempskipa{\z@ \@minus \@tempdima}%
++    \fi
++    \def\@tempa{#5}\ifx\@tempa\@empty % empty right
++      \addtolength\@tempskipb{\z@ \@minus \@tempdima}%
++    \fi
++    \settowidth{\@tempdimb}{#3}%
++    \settowidth{\@tempdimc}{#5}%
++    \ifdim\@tempdimb>\@tempdimc
++      \advance\@tempdimb -\@tempdimc
++      \addtolength\@tempskipb{\@tempdimb \@minus \@tempdimb}%
++    \else
++      \advance\@tempdimc -\@tempdimb
++      \addtolength\@tempskipa{\@tempdimc \@minus \@tempdimc}%
++    \fi
++    \hbox to\linewidth{\color@begingroup{#3}\hskip \@tempskipa
++                      {#4}\hskip \@tempskipb {#5}\color@endgroup}%
++  \fi
++}
++\newcommand{\f@nch@headinit}{}
++\newcommand{\fancyheadinit}[1]{%
++  \def\f@nch@headinit{#1}%
++}
++\newcommand{\f@nch@footinit}{}
++\newcommand{\fancyfootinit}[1]{%
++  \def\f@nch@footinit{#1}%
++}
++\newcommand{\fancyhfinit}[1]{%
++  \def\f@nch@headinit{#1}%
++  \def\f@nch@footinit{#1}%
++}
++\ifdefined\NewMirroredHookPair
++  \NewMirroredHookPair{fancyhdr/before}{fancyhdr/after}
++  \NewMirroredHookPair{fancyhdr/head/begin}{fancyhdr/head/end}
++  \NewMirroredHookPair{fancyhdr/foot/begin}{fancyhdr/foot/end}
++\fi
++\newlength\f@nch@height
++\newlength\f@nch@footalignment
++\newif\iff@nch@footalign\f@nch@footalignfalse
++\newcommand{\fancyfootalign}[1]{%
++  \def\temp@a{#1}%
++  \ifx\temp@a\@empty
++    \f@nch@footalignfalse
++  \else
++    \f@nch@footaligntrue
++    \setlength\f@nch@footalignment{#1}%
++  \fi
++}
++\newcommand\fancyhdrsettoheight[2]{%
++  \expandafter\ifx\csname f@nch@#2\endcsname\fancyhdrsettoheight
++    \else\PackageError{fancyhdr}{Unknown parameter #2 in \string\fancyhdrsettoheight}{}\fi
++  \setbox\@tempboxa\hbox{{\f@nch@checkfalse\csname @#2\endcsname}}%
++  \setlength{#1}\f@nch@height
++  \setbox\@tempboxa\box\voidb@x
++}
++\let\f@nch@oddhead\fancyhdrsettoheight
++\let\f@nch@evenhead\fancyhdrsettoheight
++\let\f@nch@oddfoot\fancyhdrsettoheight
++\let\f@nch@evenfoot\fancyhdrsettoheight
++\newcommand\f@nch@vbox[2]{%
++  \setbox0\vbox{#2}%
++  \global\f@nch@height=\ht0
++  \ifdim\ht0>#1\relax
++    \iff@nch@check
++      \dimen0=#1\advance\dimen0-\ht0
++      \PackageWarning{fancyhdr}{%
++        \string#1 is too small (\the#1): \MessageBreak
++        Make it at least \the\ht0, for example:\MessageBreak
++        \string\setlength{\string#1}{\the\ht0}%
++        \iff@nch@compatViii .\MessageBreak
++        We now make it that large for the rest of the document.\MessageBreak
++        This may cause the page layout to be inconsistent, however
++        \fi
++        \ifx#1\headheight .\MessageBreak
++          You might also make \topmargin smaller:\MessageBreak
++          \string\addtolength{\string\topmargin}{\the\dimen0}%
++        \fi
++        \@gobble
++      }%
++      \iff@nch@compatViii
++        \dimen0=#1\relax
++        \global#1=\ht0\relax
++        \ht0=\dimen0 %
++      \else
++        \ht0=#1\relax
++      \fi
++    \else
++      \ht0=#1\relax
++    \fi
++  \fi
++  \box0}
++\newcommand\f@nch@head[6]{%
++  \f@nch@reset
++  \ifdefined\UseHook\UseHook{fancyhdr/before}\UseHook{fancyhdr/head/begin}\fi
++  \f@nch@headinit\relax
++  #1%
++  \hbox to\headwidth{%
++    \f@nch@vbox\headheight{%
++      \f@nch@hfbox{#2}{#3}{#4}{#6}{h}%
++      \vskip\headruleskip\relax
++      \headrule
++    }%
++  }%
++  #5%
++  \ifdefined\UseHook\UseHook{fancyhdr/head/end}\UseHook{fancyhdr/after}\fi
++  \f@nch@restorepar
++}
++\newcommand\f@nch@foot[6]{%
++  \f@nch@reset
++  \ifdefined\UseHook\UseHook{fancyhdr/before}\UseHook{fancyhdr/foot/begin}\fi
++  \f@nch@footinit\relax
++  #1%
++  \hbox to\headwidth{%
++    \f@nch@vbox\footskip{%
++      \setbox0=\vbox{\footrule}\unvbox0
++      \vskip\footruleskip
++      \f@nch@hfbox{#2}{#3}{#4}{#6}{f}%
++    \iff@nch@footalign \vskip\f@nch@footalignment \fi
++    }%
++  }%
++  #5%
++  \ifdefined\UseHook\UseHook{fancyhdr/foot/end}\UseHook{fancyhdr/after}\fi
++  \f@nch@restorepar
++}
++\newlength\f@nch@widthL
++\newlength\f@nch@widthC
++\newlength\f@nch@widthR
++\newcommand\f@nch@hfbox[5]{%
++  \setlength\f@nch@widthL{\csname f@nch@width@#4l#5\endcsname}%
++  \setlength\f@nch@widthC{\csname f@nch@width@#4c#5\endcsname}%
++  \setlength\f@nch@widthR{\csname f@nch@width@#4r#5\endcsname}%
++  \let\@tempa\f@nch@hfbox@center
++  \ifdim \dimexpr \f@nch@widthL+\f@nch@widthC+\f@nch@widthR>\headwidth
++  \else
++    \ifdim \dimexpr \f@nch@widthL+0.5\f@nch@widthC>0.5\headwidth
++      \let \@tempa\f@nch@hfbox@fit
++    \fi
++    \ifdim \dimexpr \f@nch@widthR+0.5\f@nch@widthC>0.5\headwidth
++      \let \@tempa\f@nch@hfbox@fit
++    \fi
++  \fi
++  \@tempa{#1}{#2}{#3}#4#5%
++}
++\newcommand\f@nch@hfbox@center[5]{%
++  \hbox to \headwidth{%
++    \rlap{\f@nch@parbox{#1}\f@nch@widthL{#4}l{#5}}%
++    \hfill
++    \f@nch@parbox{#2}\f@nch@widthC{#4}c{#5}%
++    \hfill
++    \llap{\f@nch@parbox{#3}\f@nch@widthR{#4}r{#5}}%
++  }%
++}
++\newcommand\f@nch@hfbox@fit[5]{%
++  \hbox to \headwidth{%
++    \f@nch@parbox{#1}\f@nch@widthL{#4}l{#5}%
++    \hfill
++    \f@nch@parbox{#2}\f@nch@widthC{#4}c{#5}%
++    \hfill
++    \f@nch@parbox{#3}\f@nch@widthR{#4}r{#5}%
++  }%
++}%
++\newcommand\f@nch@parbox[5]{%
++  \expandafter\expandafter\expandafter\f@nch@parbox@align
++                     \csname f@nch@align@#3#4#5\endcsname
++  \parbox[\f@nch@align@@v]{#2}%
++    {%
++      \f@nch@align@@pre
++      \f@nch@align@@h\leavevmode\ignorespaces#1%
++      \f@nch@align@@post
++    }%
++}
++\newcommand\f@nch@parbox@align[2]{%
++  \def\f@nch@align@@pre{}%
++  \def\f@nch@align@@post{}%
++  \csname f@nch@parbox@align@v#1\endcsname
++  \csname f@nch@parbox@align@h#2\endcsname
++}
++\def\f@nch@parbox@align@vT{\def\f@nch@align@@v{t}\def\f@nch@align@@pre{\vspace{0pt}}}
++\def\f@nch@parbox@align@vt{\def\f@nch@align@@v{t}}
++\def\f@nch@parbox@align@vc{\def\f@nch@align@@v{c}}
++\def\f@nch@parbox@align@vb{\def\f@nch@align@@v{b}}
++\def\f@nch@parbox@align@vB{\def\f@nch@align@@v{b}\def\f@nch@align@@post{\vspace{0pt}}}
++\def\f@nch@parbox@align@hl{\def\f@nch@align@@h{\raggedright}}
++\def\f@nch@parbox@align@hc{\def\f@nch@align@@h{\centering}}
++\def\f@nch@parbox@align@hr{\def\f@nch@align@@h{\raggedleft}}
++\def\f@nch@parbox@align@hj{\def\f@nch@align@@h{}}
++\@ifundefined{@chapapp}{\let\@chapapp\chaptername}{}%
++\def\f@nch@initialise{%
++  \@ifundefined{chapter}%
++   {\def\sectionmark##1{\markboth{\MakeUppercase{\ifnum \c@secnumdepth>\z@
++          \thesection\hskip 1em\relax
++        \fi ##1}}{}}%
++    \def\subsectionmark##1{\markright {\ifnum \c@secnumdepth >\@ne
++      \thesubsection\hskip 1em\relax \fi ##1}}}%
++   {\def\chaptermark##1{\markboth {\MakeUppercase{\ifnum
++        \c@secnumdepth>\m@ne \@chapapp\ \thechapter. \ \fi ##1}}{}}%
++    \def\sectionmark##1{\markright{\MakeUppercase{\ifnum \c@secnumdepth >\z@
++        \thesection. \ \fi ##1}}}%
++   }%
++  \def\headrule{{\if@fancyplain\let\headrulewidth\plainheadrulewidth\fi
++      \hrule\@height\headrulewidth\@width\headwidth
++      \vskip-\headrulewidth}}%
++  \def\footrule{{\if@fancyplain\let\footrulewidth\plainfootrulewidth\fi
++      \hrule\@width\headwidth\@height\footrulewidth}}%
++  \def\headrulewidth{0.4pt}%
++  \def\footrulewidth{0pt}%
++  \def\headruleskip{0pt}%
++  \def\footruleskip{0.3\normalbaselineskip}%
++  \fancyhf{}%
++  \if@twoside
++    \fancyhead[el,or]{\fancyplain{}{\slshape\rightmark}}%
++    \fancyhead[er,ol]{\fancyplain{}{\slshape\leftmark}}%
++  \else
++    \fancyhead[l]{\fancyplain{}{\slshape\rightmark}}%
++    \fancyhead[r]{\fancyplain{}{\slshape\leftmark}}%
++  \fi
++  \fancyfoot[c]{\rmfamily\thepage}% page number
++}
++\f@nch@initialise
++\def\ps@f@nch@fancyproto{%
++  \ifdim\headwidth<0sp
++    \global\advance\headwidth123456789sp\global\advance\headwidth\textwidth
++  \fi
++  \gdef\ps@f@nch@fancyproto{\@fancyplainfalse\ps@f@nch@fancycore}%
++  \@fancyplainfalse\ps@f@nch@fancycore
++}%
++\@namedef{f@nch@ps@f@nch@fancyproto-is-fancyhdr}{}
++\def\ps@fancy{\ps@f@nch@fancyproto}
++\@namedef{f@nch@ps@fancy-is-fancyhdr}{}
++\def\ps@fancyplain{\ps@f@nch@fancyproto \let\ps@plain\ps@plain@fancy}
++\def\ps@plain@fancy{\@fancyplaintrue\ps@f@nch@fancycore}
++\let\f@nch@ps@empty\ps@empty
++\def\ps@f@nch@fancycore{%
++  \f@nch@ps@empty
++  \def\@mkboth{\protect\markboth}%
++  \def\f@nch@oddhead{\f@nch@head\f@nch@Oolh\f@nch@olh\f@nch@och\f@nch@orh\f@nch@Oorh{o}}%
++  \def\@oddhead{%
++    \iff@nch@twoside
++      \ifodd\c@page
++        \f@nch@oddhead
++      \else
++        \@evenhead
++      \fi
++    \else
++      \f@nch@oddhead
++    \fi
++  }
++  \def\f@nch@oddfoot{\f@nch@foot\f@nch@Oolf\f@nch@olf\f@nch@ocf\f@nch@orf\f@nch@Oorf{o}}%
++  \def\@oddfoot{%
++    \iff@nch@twoside
++      \ifodd\c@page
++        \f@nch@oddfoot
++      \else
++        \@evenfoot
++      \fi
++    \else
++      \f@nch@oddfoot
++    \fi
++  }
++  \def\@evenhead{\f@nch@head\f@nch@Oelh\f@nch@elh\f@nch@ech\f@nch@erh\f@nch@Oerh{e}}%
++  \def\@evenfoot{\f@nch@foot\f@nch@Oelf\f@nch@elf\f@nch@ecf\f@nch@erf\f@nch@Oerf{e}}%
++}
++\def\f@nch@Oolh{\if@reversemargin\hss\else\relax\fi}
++\def\f@nch@Oorh{\if@reversemargin\relax\else\hss\fi}
++\let\f@nch@Oelh\f@nch@Oorh
++\let\f@nch@Oerh\f@nch@Oolh
++\let\f@nch@Oolf\f@nch@Oolh
++\let\f@nch@Oorf\f@nch@Oorh
++\let\f@nch@Oelf\f@nch@Oelh
++\let\f@nch@Oerf\f@nch@Oerh
++\def\f@nch@offsolh{\headwidth=\textwidth\advance\headwidth\f@nch@offset@olh
++                   \advance\headwidth\f@nch@offset@orh\hskip-\f@nch@offset@olh}
++\def\f@nch@offselh{\headwidth=\textwidth\advance\headwidth\f@nch@offset@elh
++                   \advance\headwidth\f@nch@offset@erh\hskip-\f@nch@offset@elh}
++\def\f@nch@offsolf{\headwidth=\textwidth\advance\headwidth\f@nch@offset@olf
++                   \advance\headwidth\f@nch@offset@orf\hskip-\f@nch@offset@olf}
++\def\f@nch@offself{\headwidth=\textwidth\advance\headwidth\f@nch@offset@elf
++                   \advance\headwidth\f@nch@offset@erf\hskip-\f@nch@offset@elf}
++\def\f@nch@setoffs{%
++  \f@nch@gbl\let\headwidth\f@nch@headwidth
++  \f@nch@gbl\def\f@nch@Oolh{\f@nch@offsolh}%
++  \f@nch@gbl\def\f@nch@Oelh{\f@nch@offselh}%
++  \f@nch@gbl\def\f@nch@Oorh{\hss}%
++  \f@nch@gbl\def\f@nch@Oerh{\hss}%
++  \f@nch@gbl\def\f@nch@Oolf{\f@nch@offsolf}%
++  \f@nch@gbl\def\f@nch@Oelf{\f@nch@offself}%
++  \f@nch@gbl\def\f@nch@Oorf{\hss}%
++  \f@nch@gbl\def\f@nch@Oerf{\hss}%
++}
++\newif\iff@nch@footnote
++\AtBeginDocument{%
++  \let\latex@makecol\@makecol
++  \def\@makecol{\ifvoid\footins\f@nch@footnotefalse\else\f@nch@footnotetrue\fi
++    \let\f@nch@topfloat\@toplist\let\f@nch@botfloat\@botlist\latex@makecol}%
++}
++\newcommand\iftopfloat[2]{\ifx\f@nch@topfloat\@empty #2\else #1\fi}%
++\newcommand\ifbotfloat[2]{\ifx\f@nch@botfloat\@empty #2\else #1\fi}%
++\newcommand\iffloatpage[2]{\if@fcolmade #1\else #2\fi}%
++\newcommand\iffootnote[2]{\iff@nch@footnote #1\else #2\fi}%
++\ifx\@temptokenb\undefined \csname newtoks\endcsname\@temptokenb\fi
++\newif\iff@nch@pagestyle@star
++\newcommand\fancypagestyle{%
++  \@ifstar{\f@nch@pagestyle@startrue\f@nch@pagestyle}%
++          {\f@nch@pagestyle@starfalse\f@nch@pagestyle}%
++}
++\newcommand\f@nch@pagestyle[1]{%
++  \@ifnextchar[{\f@nch@@pagestyle{#1}}{\f@nch@@pagestyle{#1}[f@nch@fancyproto]}%
++}
++\long\def\f@nch@@pagestyle#1[#2]#3{%
++  \@ifundefined{ps@#2}{%
++    \PackageError{fancyhdr}{\string\fancypagestyle: Unknown base page style `#2'}{}%
++  }{%
++    \@ifundefined{f@nch@ps@#2-is-fancyhdr}{%
++      \PackageError{fancyhdr}{\string\fancypagestyle: Base page style `#2' is not fancyhdr-based}{}%
++    }%
++    {%
++      \f@nch@pagestyle@setup
++      \def\temp@b{\@namedef{ps@#1}}%
++      \expandafter\temp@b\expandafter{\the\@temptokenb
++          \let\f@nch@gbl\relax\@nameuse{ps@#2}#3\relax}%
++      \@namedef{f@nch@ps@#1-is-fancyhdr}{}%
++    }%
++  }%
++}
++\newcommand\f@nch@pagestyle@setup{%
++  \iff@nch@pagestyle@star
++    \iff@nch@check\@temptokenb={\f@nch@checktrue}\else\@temptokenb={\f@nch@checkfalse}\fi
++    \@tfor\temp@a:=
++      \f@nch@olh\f@nch@och\f@nch@orh\f@nch@elh\f@nch@ech\f@nch@erh
++      \f@nch@olf\f@nch@ocf\f@nch@orf\f@nch@elf\f@nch@ecf\f@nch@erf
++      \f@nch@width@elh\f@nch@width@ech\f@nch@width@erh\f@nch@width@olh
++      \f@nch@width@och\f@nch@width@orh\f@nch@width@elf\f@nch@width@ecf
++      \f@nch@width@erf\f@nch@width@olf\f@nch@width@ocf\f@nch@width@orf
++      \f@nch@align@elh\f@nch@align@ech\f@nch@align@erh\f@nch@align@olh
++      \f@nch@align@och\f@nch@align@orh\f@nch@align@elf\f@nch@align@ecf
++      \f@nch@align@erf\f@nch@align@olf\f@nch@align@ocf\f@nch@align@orf
++      \f@nch@Oolh\f@nch@Oorh\f@nch@Oelh\f@nch@Oerh
++      \f@nch@Oolf\f@nch@Oorf\f@nch@Oelf\f@nch@Oerf
++      \f@nch@headinit\f@nch@footinit
++      \headrule\headrulewidth\footrule\footrulewidth
++    \do {%
++      \toks@=\expandafter\expandafter\expandafter{\temp@a}%
++      \toks@=\expandafter\expandafter\expandafter{%
++        \expandafter\expandafter\expandafter\def
++        \expandafter\expandafter\temp@a\expandafter{\the\toks@}}%
++      \edef\temp@b{\@temptokenb={\the\@temptokenb\the\toks@}}%
++      \temp@b
++    }%
++    \@tfor\temp@a:=
++      \f@nch@offset@olh\f@nch@offset@orh\f@nch@offset@elh\f@nch@offset@erh
++      \f@nch@offset@olf\f@nch@offset@orf\f@nch@offset@elf\f@nch@offset@erf
++    \do {%
++      \toks@=\expandafter\expandafter\expandafter{\expandafter\the\temp@a}%
++      \toks@=\expandafter\expandafter\expandafter{%
++        \expandafter\expandafter\expandafter\setlength
++        \expandafter\expandafter\temp@a\expandafter{\the\toks@}}%
++      \edef\temp@b{\@temptokenb={\the\@temptokenb\the\toks@}}%
++      \temp@b
++    }%
++  \else
++    \@temptokenb={}%
++  \fi
++}
++\newcommand\fancypagestyleassign[2]{%
++  \@ifundefined{ps@#2}{%
++    \PackageError{fancyhdr}{\string\fancypagestyleassign: Unknown page style `#2'}{}%
++    }{%
++     \expandafter\let
++       \csname ps@#1\expandafter\endcsname
++       \csname ps@#2\endcsname
++     \@ifundefined{f@nch@ps@#2-is-fancyhdr}{%
++       \expandafter\let\csname f@nch@ps@#1-is-fancyhdr\endcsname\@undefined
++     }{%
++       \@namedef{f@nch@ps@#1-is-fancyhdr}{}%
++     }%
++   }%
++}
++\fancypagestyle*{fancydefault}{\f@nch@initialise}
++\def\f@nchdrbox@topstrut{\vrule height\ht\strutbox width\z@}
++\def\f@nchdrbox@botstrut{\vrule depth\dp\strutbox width\z@}
++\def\f@nchdrbox@nostrut{\noalign{\vspace{0pt}}\let\f@nchdrbox@@crstrut\f@nchdrbox@botstrut}
++\NewDocumentCommand{\fancyhdrbox}{ O{cl} o m }{%
++\begingroup
++  \let\f@nchdrbox@@pre\f@nchdrbox@topstrut
++  \let\f@nchdrbox@@postx\f@nchdrbox@botstrut
++  \let\f@nchdrbox@@posty\relax
++  \let\f@nchdrbox@@crstrut\strut
++  \IfNoValueTF{#2}%
++    {\let\f@nchdrbox@@halignto\@empty}%
++    {\setlength\@tempdima{#2}%
++      \def\f@nchdrbox@@halignto{to\@tempdima}}%
++  \def\@tempa{#1}%
++  \ifx\@tempa\@empty
++    \f@nchdrbox@align cl\@nil{#3}%
++  \else
++    \f@nchdrbox@align #1\@nil{#3}%
++  \fi
++\endgroup
++}
++\protected\def\f@nchdrbox@cr{%
++  {\ifnum0=`}\fi\@ifstar\@f@nchdrbox@xcr\@f@nchdrbox@xcr}
++
++\def\@f@nchdrbox@xcr{%
++  \unskip\f@nchdrbox@@crstrut
++  \@ifnextchar[\@f@nchdrbox@argc{\ifnum0=`{\fi}\cr}%
++}
++
++\def\@f@nchdrbox@argc[#1]{%
++  \ifnum0=`{\fi}%
++    \ifdim #1>\z@
++      \unskip\@f@nchdrbox@xargc{#1}%
++    \else
++      \@f@nchdrbox@yargc{#1}%
++    \fi}
++
++\def\@f@nchdrbox@xargc#1{\@tempdima #1\advance\@tempdima \dp \strutbox
++   \vrule \@height\z@ \@depth\@tempdima \@width\z@ \cr}
++
++\def\@f@nchdrbox@yargc#1{\cr\noalign{\setlength\@tempdima{#1}\vskip\@tempdima}}
++\def\f@nchdrbox@T{\let\f@nchdrbox@@pre\f@nchdrbox@nostrut
++                  \f@nchdrbox@t}
++\def\f@nchdrbox@t{\def\f@nchdrbox@@v{t}\def\f@nchdrbox@@h{l}}
++\def\f@nchdrbox@c{\def\f@nchdrbox@@v{c}\def\f@nchdrbox@@h{c}}
++\def\f@nchdrbox@b{\def\f@nchdrbox@@v{b}\def\f@nchdrbox@@h{l}}
++\def\f@nchdrbox@B{\let\f@nchdrbox@@postx\relax
++                  \def\f@nchdrbox@@posty{\vspace{0pt}}%
++                  \f@nchdrbox@b}
++\long\def\f@nchdrbox@align#1#2\@nil#3{%
++  \f@nch@ifin{#1}{TtcbB}{%
++    \@nameuse{f@nchdrbox@#1}%
++    \def\@tempa{#2}%
++    \ifx\@tempa\@empty\else \def\f@nchdrbox@@h{#2}\fi
++  }%
++  {\def\f@nchdrbox@@v{c}\def\f@nchdrbox@@h{#1}}%
++  \expandafter\f@nch@ifin\expandafter{\f@nchdrbox@@h}{lcr}{}%
++  {\PackageError{fancyhdr}{\string\fancyhdrbox: Illegal char `\f@nchdrbox@@h'\MessageBreak
++                            in alignment argument}{}}%
++  \let\\\f@nchdrbox@cr
++  \setbox0=\if \f@nchdrbox@@v t\vtop
++  \else \vbox
++  \fi
++  {%
++     \ialign \f@nchdrbox@@halignto
++     \bgroup \relax
++     {\if \f@nchdrbox@@h l\hskip 1sp\else \hfil \fi
++       \ignorespaces ##\unskip
++       \if\f@nchdrbox@@h r\else \hfil \fi
++     }%
++     \tabskip\z@skip \cr
++     \f@nchdrbox@@pre
++     #3\unskip \f@nchdrbox@@postx
++     \crcr
++     \egroup
++     \f@nchdrbox@@posty
++  }%
++  \if\f@nchdrbox@@v c\@tempdima=\ht0\advance\@tempdima\dp0%
++    \ht0=0.5\@tempdima\dp0=0.5\@tempdima\fi
++  \leavevmode \box0
++}
++\@ifclassloaded{newlfm}
++{
++  \let\ps@@empty\f@nch@ps@empty
++  \AtBeginDocument{%
++    \renewcommand{\@zfancyhead}[5]{\relax\hbox to\headwidth{\f@nch@reset
++      \@zfancyvbox\headheight{\hbox
++        {\rlap{\parbox[b]{\headwidth}{\raggedright\f@nch@olh}}\hfill
++          \parbox[b]{\headwidth}{\centering\f@nch@olh}\hfill
++          \llap{\parbox[b]{\headwidth}{\raggedleft\f@nch@orh}}}%
++        \zheadrule}}\relax}%
++  }
++}
++{}
++\endinput
++%%
++%% End of file `fancyhdr.sty'.
+diff --git a/paper/icml2026/icml2026.bst b/paper/icml2026/icml2026.bst
+new file mode 100644
+index 0000000..f1a50e8
+--- /dev/null
++++ b/paper/icml2026/icml2026.bst
+@@ -0,0 +1,1443 @@
++%% File: `icml2025.bst'
++%% A modification of `plainnl.bst' for use with natbib package 
++%%
++%% Copyright 2010 Hal Daum\'e III
++%% Modified by J. Fürnkranz
++%% - Changed labels from (X and Y, 2000) to (X & Y, 2000)
++%% - Changed References to last name first and abbreviated first names.
++%% Modified by Iain Murray 2018 (who suggests adopting a standard .bst in future...)
++%% - Made it actually use abbreviated first names
++%%
++%% Copyright 1993-2007 Patrick W Daly
++%% Max-Planck-Institut f\"ur Sonnensystemforschung
++%% Max-Planck-Str. 2
++%% D-37191 Katlenburg-Lindau
++%% Germany
++%% E-mail: daly@mps.mpg.de
++%%
++%% This program can be redistributed and/or modified under the terms
++%% of the LaTeX Project Public License Distributed from CTAN
++%% archives in directory macros/latex/base/lppl.txt; either
++%% version 1 of the License, or any later version.
++%%
++ % Version and source file information:
++ % \ProvidesFile{icml2010.mbs}[2007/11/26 1.93 (PWD)]
++ %
++ % BibTeX `plainnat' family
++ %   version 0.99b for BibTeX versions 0.99a or later,
++ %   for LaTeX versions 2.09 and 2e.
++ %
++ % For use with the `natbib.sty' package; emulates the corresponding
++ %   member of the `plain' family, but with author-year citations.
++ %
++ % With version 6.0 of `natbib.sty', it may also be used for numerical
++ %   citations, while retaining the commands \citeauthor, \citefullauthor,
++ %   and \citeyear to print the corresponding information.
++ %
++ % For version 7.0 of `natbib.sty', the KEY field replaces missing
++ %   authors/editors, and the date is left blank in \bibitem.
++ %
++ % Includes field EID for the sequence/citation number of electronic journals
++ %  which is used instead of page numbers.
++ %
++ % Includes fields ISBN and ISSN.
++ %
++ % Includes field URL for Internet addresses.
++ %
++ % Includes field DOI for Digital Object Idenfifiers.
++ %
++ % Works best with the url.sty package of Donald Arseneau.
++ %
++ % Works with identical authors and year are further sorted by
++ %   citation key, to preserve any natural sequence.
++ %
++ENTRY
++  { address
++    author
++    booktitle
++    chapter
++    doi
++    eid
++    edition
++    editor
++    howpublished
++    institution
++    isbn
++    issn
++    journal
++    key
++    month
++    note
++    number
++    organization
++    pages
++    publisher
++    school
++    series
++    title
++    type
++    url
++    volume
++    year
++  }
++  {}
++  { label extra.label sort.label short.list }
++
++INTEGERS { output.state before.all mid.sentence after.sentence after.block }
++
++FUNCTION {init.state.consts}
++{ #0 'before.all :=
++  #1 'mid.sentence :=
++  #2 'after.sentence :=
++  #3 'after.block :=
++}
++
++STRINGS { s t }
++
++FUNCTION {output.nonnull}
++{ 's :=
++  output.state mid.sentence =
++    { ", " * write$ }
++    { output.state after.block =
++        { add.period$ write$
++          newline$
++          "\newblock " write$
++        }
++        { output.state before.all =
++            'write$
++            { add.period$ " " * write$ }
++          if$
++        }
++      if$
++      mid.sentence 'output.state :=
++    }
++  if$
++  s
++}
++
++FUNCTION {output}
++{ duplicate$ empty$
++    'pop$
++    'output.nonnull
++  if$
++}
++
++FUNCTION {output.check}
++{ 't :=
++  duplicate$ empty$
++    { pop$ "empty " t * " in " * cite$ * warning$ }
++    'output.nonnull
++  if$
++}
++
++FUNCTION {fin.entry}
++{ add.period$
++  write$
++  newline$
++}
++
++FUNCTION {new.block}
++{ output.state before.all =
++    'skip$
++    { after.block 'output.state := }
++  if$
++}
++
++FUNCTION {new.sentence}
++{ output.state after.block =
++    'skip$
++    { output.state before.all =
++        'skip$
++        { after.sentence 'output.state := }
++      if$
++    }
++  if$
++}
++
++FUNCTION {not}
++{   { #0 }
++    { #1 }
++  if$
++}
++
++FUNCTION {and}
++{   'skip$
++    { pop$ #0 }
++  if$
++}
++
++FUNCTION {or}
++{   { pop$ #1 }
++    'skip$
++  if$
++}
++
++FUNCTION {new.block.checka}
++{ empty$
++    'skip$
++    'new.block
++  if$
++}
++
++FUNCTION {new.block.checkb}
++{ empty$
++  swap$ empty$
++  and
++    'skip$
++    'new.block
++  if$
++}
++
++FUNCTION {new.sentence.checka}
++{ empty$
++    'skip$
++    'new.sentence
++  if$
++}
++
++FUNCTION {new.sentence.checkb}
++{ empty$
++  swap$ empty$
++  and
++    'skip$
++    'new.sentence
++  if$
++}
++
++FUNCTION {field.or.null}
++{ duplicate$ empty$
++    { pop$ "" }
++    'skip$
++  if$
++}
++
++FUNCTION {emphasize}
++{ duplicate$ empty$
++    { pop$ "" }
++    { "\emph{" swap$ * "}" * }
++  if$
++}
++
++INTEGERS { nameptr namesleft numnames }
++
++FUNCTION {format.names}
++{ 's :=
++  #1 'nameptr :=
++  s num.names$ 'numnames :=
++  numnames 'namesleft :=
++    { namesleft #0 > }
++    { s nameptr "{vv~}{ll}{, jj}{, f.}" format.name$ 't :=
++      nameptr #1 >
++        { namesleft #1 >
++            { ", " * t * }
++            { numnames #2 >
++                { "," * }
++                'skip$
++              if$
++              t "others" =
++                { " et~al." * }
++                { " and " * t * }
++              if$
++            }
++          if$
++        }
++        't
++      if$
++      nameptr #1 + 'nameptr :=
++      namesleft #1 - 'namesleft :=
++    }
++  while$
++}
++
++FUNCTION {format.key}
++{ empty$
++    { key field.or.null }
++    { "" }
++  if$
++}
++
++FUNCTION {format.authors}
++{ author empty$
++    { "" }
++    { author format.names }
++  if$
++}
++
++FUNCTION {format.editors}
++{ editor empty$
++    { "" }
++    { editor format.names
++      editor num.names$ #1 >
++        { " (eds.)" * }
++        { " (ed.)" * }
++      if$
++    }
++  if$
++}
++
++FUNCTION {format.isbn}
++{ isbn empty$
++    { "" }
++    { new.block "ISBN " isbn * }
++  if$
++}
++
++FUNCTION {format.issn}
++{ issn empty$
++    { "" }
++    { new.block "ISSN " issn * }
++  if$
++}
++
++FUNCTION {format.url}
++{ url empty$
++    { "" }
++    { new.block "URL \url{" url * "}" * }
++  if$
++}
++
++FUNCTION {format.doi}
++{ doi empty$
++    { "" }
++    { new.block "\doi{" doi * "}" * }
++  if$
++}
++
++FUNCTION {format.title}
++{ title empty$
++    { "" }
++    { title "t" change.case$ }
++  if$
++}
++
++FUNCTION {format.full.names}
++{'s :=
++  #1 'nameptr :=
++  s num.names$ 'numnames :=
++  numnames 'namesleft :=
++    { namesleft #0 > }
++    { s nameptr
++      "{vv~}{ll}" format.name$ 't :=
++      nameptr #1 >
++        {
++          namesleft #1 >
++            { ", " * t * }
++            {
++              numnames #2 >
++                { "," * }
++                'skip$
++              if$
++              t "others" =
++                { " et~al." * }
++                { " and " * t * }
++              if$
++            }
++          if$
++        }
++        't
++      if$
++      nameptr #1 + 'nameptr :=
++      namesleft #1 - 'namesleft :=
++    }
++  while$
++}
++
++FUNCTION {author.editor.full}
++{ author empty$
++    { editor empty$
++        { "" }
++        { editor format.full.names }
++      if$
++    }
++    { author format.full.names }
++  if$
++}
++
++FUNCTION {author.full}
++{ author empty$
++    { "" }
++    { author format.full.names }
++  if$
++}
++
++FUNCTION {editor.full}
++{ editor empty$
++    { "" }
++    { editor format.full.names }
++  if$
++}
++
++FUNCTION {make.full.names}
++{ type$ "book" =
++  type$ "inbook" =
++  or
++    'author.editor.full
++    { type$ "proceedings" =
++        'editor.full
++        'author.full
++      if$
++    }
++  if$
++}
++
++FUNCTION {output.bibitem}
++{ newline$
++  "\bibitem[" write$
++  label write$
++  ")" make.full.names duplicate$ short.list =
++     { pop$ }
++     { * }
++   if$
++  "]{" * write$
++  cite$ write$
++  "}" write$
++  newline$
++  ""
++  before.all 'output.state :=
++}
++
++FUNCTION {n.dashify}
++{ 't :=
++  ""
++    { t empty$ not }
++    { t #1 #1 substring$ "-" =
++        { t #1 #2 substring$ "--" = not
++            { "--" *
++              t #2 global.max$ substring$ 't :=
++            }
++            {   { t #1 #1 substring$ "-" = }
++                { "-" *
++                  t #2 global.max$ substring$ 't :=
++                }
++              while$
++            }
++          if$
++        }
++        { t #1 #1 substring$ *
++          t #2 global.max$ substring$ 't :=
++        }
++      if$
++    }
++  while$
++}
++
++FUNCTION {format.date}
++{ year duplicate$ empty$
++    { "empty year in " cite$ * warning$
++       pop$ "" }
++    'skip$
++  if$
++  month empty$
++    'skip$
++    { month
++      " " * swap$ *
++    }
++  if$
++  extra.label *
++}
++
++FUNCTION {format.btitle}
++{ title emphasize
++}
++
++FUNCTION {tie.or.space.connect}
++{ duplicate$ text.length$ #3 <
++    { "~" }
++    { " " }
++  if$
++  swap$ * *
++}
++
++FUNCTION {either.or.check}
++{ empty$
++    'pop$
++    { "can't use both " swap$ * " fields in " * cite$ * warning$ }
++  if$
++}
++
++FUNCTION {format.bvolume}
++{ volume empty$
++    { "" }
++    { "volume" volume tie.or.space.connect
++      series empty$
++        'skip$
++        { " of " * series emphasize * }
++      if$
++      "volume and number" number either.or.check
++    }
++  if$
++}
++
++FUNCTION {format.number.series}
++{ volume empty$
++    { number empty$
++        { series field.or.null }
++        { output.state mid.sentence =
++            { "number" }
++            { "Number" }
++          if$
++          number tie.or.space.connect
++          series empty$
++            { "there's a number but no series in " cite$ * warning$ }
++            { " in " * series * }
++          if$
++        }
++      if$
++    }
++    { "" }
++  if$
++}
++
++FUNCTION {format.edition}
++{ edition empty$
++    { "" }
++    { output.state mid.sentence =
++        { edition "l" change.case$ " edition" * }
++        { edition "t" change.case$ " edition" * }
++      if$
++    }
++  if$
++}
++
++INTEGERS { multiresult }
++
++FUNCTION {multi.page.check}
++{ 't :=
++  #0 'multiresult :=
++    { multiresult not
++      t empty$ not
++      and
++    }
++    { t #1 #1 substring$
++      duplicate$ "-" =
++      swap$ duplicate$ "," =
++      swap$ "+" =
++      or or
++        { #1 'multiresult := }
++        { t #2 global.max$ substring$ 't := }
++      if$
++    }
++  while$
++  multiresult
++}
++
++FUNCTION {format.pages}
++{ pages empty$
++    { "" }
++    { pages multi.page.check
++        { "pp.\ " pages n.dashify tie.or.space.connect }
++        { "pp.\ " pages tie.or.space.connect }
++      if$
++    }
++  if$
++}
++
++FUNCTION {format.eid}
++{ eid empty$
++    { "" }
++    { "art." eid tie.or.space.connect }
++  if$
++}
++
++FUNCTION {format.vol.num.pages}
++{ volume field.or.null
++  number empty$
++    'skip$
++    { "\penalty0 (" number * ")" * *
++      volume empty$
++        { "there's a number but no volume in " cite$ * warning$ }
++        'skip$
++      if$
++    }
++  if$
++  pages empty$
++    'skip$
++    { duplicate$ empty$
++        { pop$ format.pages }
++        { ":\penalty0 " * pages n.dashify * }
++      if$
++    }
++  if$
++}
++
++FUNCTION {format.vol.num.eid}
++{ volume field.or.null
++  number empty$
++    'skip$
++    { "\penalty0 (" number * ")" * *
++      volume empty$
++        { "there's a number but no volume in " cite$ * warning$ }
++        'skip$
++      if$
++    }
++  if$
++  eid empty$
++    'skip$
++    { duplicate$ empty$
++        { pop$ format.eid }
++        { ":\penalty0 " * eid * }
++      if$
++    }
++  if$
++}
++
++FUNCTION {format.chapter.pages}
++{ chapter empty$
++    'format.pages
++    { type empty$
++        { "chapter" }
++        { type "l" change.case$ }
++      if$
++      chapter tie.or.space.connect
++      pages empty$
++        'skip$
++        { ", " * format.pages * }
++      if$
++    }
++  if$
++}
++
++FUNCTION {format.in.ed.booktitle}
++{ booktitle empty$
++    { "" }
++    { editor empty$
++        { "In " booktitle emphasize * }
++        { "In " format.editors * ", " * booktitle emphasize * }
++      if$
++    }
++  if$
++}
++
++FUNCTION {empty.misc.check}
++{ author empty$ title empty$ howpublished empty$
++  month empty$ year empty$ note empty$
++  and and and and and
++  key empty$ not and
++    { "all relevant fields are empty in " cite$ * warning$ }
++    'skip$
++  if$
++}
++
++FUNCTION {format.thesis.type}
++{ type empty$
++    'skip$
++    { pop$
++      type "t" change.case$
++    }
++  if$
++}
++
++FUNCTION {format.tr.number}
++{ type empty$
++    { "Technical Report" }
++    'type
++  if$
++  number empty$
++    { "t" change.case$ }
++    { number tie.or.space.connect }
++  if$
++}
++
++FUNCTION {format.article.crossref}
++{ key empty$
++    { journal empty$
++        { "need key or journal for " cite$ * " to crossref " * crossref *
++          warning$
++          ""
++        }
++        { "In \emph{" journal * "}" * }
++      if$
++    }
++    { "In " }
++  if$
++  " \citet{" * crossref * "}" *
++}
++
++FUNCTION {format.book.crossref}
++{ volume empty$
++    { "empty volume in " cite$ * "'s crossref of " * crossref * warning$
++      "In "
++    }
++    { "Volume" volume tie.or.space.connect
++      " of " *
++    }
++  if$
++  editor empty$
++  editor field.or.null author field.or.null =
++  or
++    { key empty$
++        { series empty$
++            { "need editor, key, or series for " cite$ * " to crossref " *
++              crossref * warning$
++              "" *
++            }
++            { "\emph{" * series * "}" * }
++          if$
++        }
++        'skip$
++      if$
++    }
++    'skip$
++  if$
++  " \citet{" * crossref * "}" *
++}
++
++FUNCTION {format.incoll.inproc.crossref}
++{ editor empty$
++  editor field.or.null author field.or.null =
++  or
++    { key empty$
++        { booktitle empty$
++            { "need editor, key, or booktitle for " cite$ * " to crossref " *
++              crossref * warning$
++              ""
++            }
++            { "In \emph{" booktitle * "}" * }
++          if$
++        }
++        { "In " }
++      if$
++    }
++    { "In " }
++  if$
++  " \citet{" * crossref * "}" *
++}
++
++FUNCTION {article}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  crossref missing$
++    { journal emphasize "journal" output.check
++      eid empty$
++        { format.vol.num.pages output }
++        { format.vol.num.eid output }
++      if$
++      format.date "year" output.check
++    }
++    { format.article.crossref output.nonnull
++      eid empty$
++        { format.pages output }
++        { format.eid output }
++      if$
++    }
++  if$
++  format.issn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {book}
++{ output.bibitem
++  author empty$
++    { format.editors "author and editor" output.check
++      editor format.key output
++    }
++    { format.authors output.nonnull
++      crossref missing$
++        { "author and editor" editor either.or.check }
++        'skip$
++      if$
++    }
++  if$
++  new.block
++  format.btitle "title" output.check
++  crossref missing$
++    { format.bvolume output
++      new.block
++      format.number.series output
++      new.sentence
++      publisher "publisher" output.check
++      address output
++    }
++    { new.block
++      format.book.crossref output.nonnull
++    }
++  if$
++  format.edition output
++  format.date "year" output.check
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {booklet}
++{ output.bibitem
++  format.authors output
++  author format.key output
++  new.block
++  format.title "title" output.check
++  howpublished address new.block.checkb
++  howpublished output
++  address output
++  format.date output
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {inbook}
++{ output.bibitem
++  author empty$
++    { format.editors "author and editor" output.check
++      editor format.key output
++    }
++    { format.authors output.nonnull
++      crossref missing$
++        { "author and editor" editor either.or.check }
++        'skip$
++      if$
++    }
++  if$
++  new.block
++  format.btitle "title" output.check
++  crossref missing$
++    { format.bvolume output
++      format.chapter.pages "chapter and pages" output.check
++      new.block
++      format.number.series output
++      new.sentence
++      publisher "publisher" output.check
++      address output
++    }
++    { format.chapter.pages "chapter and pages" output.check
++      new.block
++      format.book.crossref output.nonnull
++    }
++  if$
++  format.edition output
++  format.date "year" output.check
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {incollection}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  crossref missing$
++    { format.in.ed.booktitle "booktitle" output.check
++      format.bvolume output
++      format.number.series output
++      format.chapter.pages output
++      new.sentence
++      publisher "publisher" output.check
++      address output
++      format.edition output
++      format.date "year" output.check
++    }
++    { format.incoll.inproc.crossref output.nonnull
++      format.chapter.pages output
++    }
++  if$
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {inproceedings}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  crossref missing$
++    { format.in.ed.booktitle "booktitle" output.check
++      format.bvolume output
++      format.number.series output
++      format.pages output
++      address empty$
++        { organization publisher new.sentence.checkb
++          organization output
++          publisher output
++          format.date "year" output.check
++        }
++        { address output.nonnull
++          format.date "year" output.check
++          new.sentence
++          organization output
++          publisher output
++        }
++      if$
++    }
++    { format.incoll.inproc.crossref output.nonnull
++      format.pages output
++    }
++  if$
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {conference} { inproceedings }
++
++FUNCTION {manual}
++{ output.bibitem
++  format.authors output
++  author format.key output
++  new.block
++  format.btitle "title" output.check
++  organization address new.block.checkb
++  organization output
++  address output
++  format.edition output
++  format.date output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {mastersthesis}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  "Master's thesis" format.thesis.type output.nonnull
++  school "school" output.check
++  address output
++  format.date "year" output.check
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {misc}
++{ output.bibitem
++  format.authors output
++  author format.key output
++  title howpublished new.block.checkb
++  format.title output
++  howpublished new.block.checka
++  howpublished output
++  format.date output
++  format.issn output
++  format.url output
++  new.block
++  note output
++  fin.entry
++  empty.misc.check
++}
++
++FUNCTION {phdthesis}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.btitle "title" output.check
++  new.block
++  "PhD thesis" format.thesis.type output.nonnull
++  school "school" output.check
++  address output
++  format.date "year" output.check
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {proceedings}
++{ output.bibitem
++  format.editors output
++  editor format.key output
++  new.block
++  format.btitle "title" output.check
++  format.bvolume output
++  format.number.series output
++  address output
++  format.date "year" output.check
++  new.sentence
++  organization output
++  publisher output
++  format.isbn output
++  format.doi output
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {techreport}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  format.tr.number output.nonnull
++  institution "institution" output.check
++  address output
++  format.date "year" output.check
++  format.url output
++  new.block
++  note output
++  fin.entry
++}
++
++FUNCTION {unpublished}
++{ output.bibitem
++  format.authors "author" output.check
++  author format.key output
++  new.block
++  format.title "title" output.check
++  new.block
++  note "note" output.check
++  format.date output
++  format.url output
++  fin.entry
++}
++
++FUNCTION {default.type} { misc }
++
++
++MACRO {jan} {"January"}
++
++MACRO {feb} {"February"}
++
++MACRO {mar} {"March"}
++
++MACRO {apr} {"April"}
++
++MACRO {may} {"May"}
++
++MACRO {jun} {"June"}
++
++MACRO {jul} {"July"}
++
++MACRO {aug} {"August"}
++
++MACRO {sep} {"September"}
++
++MACRO {oct} {"October"}
++
++MACRO {nov} {"November"}
++
++MACRO {dec} {"December"}
++
++
++
++MACRO {acmcs} {"ACM Computing Surveys"}
++
++MACRO {acta} {"Acta Informatica"}
++
++MACRO {cacm} {"Communications of the ACM"}
++
++MACRO {ibmjrd} {"IBM Journal of Research and Development"}
++
++MACRO {ibmsj} {"IBM Systems Journal"}
++
++MACRO {ieeese} {"IEEE Transactions on Software Engineering"}
++
++MACRO {ieeetc} {"IEEE Transactions on Computers"}
++
++MACRO {ieeetcad}
++ {"IEEE Transactions on Computer-Aided Design of Integrated Circuits"}
++
++MACRO {ipl} {"Information Processing Letters"}
++
++MACRO {jacm} {"Journal of the ACM"}
++
++MACRO {jcss} {"Journal of Computer and System Sciences"}
++
++MACRO {scp} {"Science of Computer Programming"}
++
++MACRO {sicomp} {"SIAM Journal on Computing"}
++
++MACRO {tocs} {"ACM Transactions on Computer Systems"}
++
++MACRO {tods} {"ACM Transactions on Database Systems"}
++
++MACRO {tog} {"ACM Transactions on Graphics"}
++
++MACRO {toms} {"ACM Transactions on Mathematical Software"}
++
++MACRO {toois} {"ACM Transactions on Office Information Systems"}
++
++MACRO {toplas} {"ACM Transactions on Programming Languages and Systems"}
++
++MACRO {tcs} {"Theoretical Computer Science"}
++
++
++READ
++
++FUNCTION {sortify}
++{ purify$
++  "l" change.case$
++}
++
++INTEGERS { len }
++
++FUNCTION {chop.word}
++{ 's :=
++  'len :=
++  s #1 len substring$ =
++    { s len #1 + global.max$ substring$ }
++    's
++  if$
++}
++
++FUNCTION {format.lab.names}
++{ 's :=
++  s #1 "{vv~}{ll}" format.name$
++  s num.names$ duplicate$
++  #2 >
++    { pop$ " et~al." * }
++    { #2 <
++        'skip$
++        { s #2 "{ff }{vv }{ll}{ jj}" format.name$ "others" =
++            { " et~al." * }
++            { " \& " * s #2 "{vv~}{ll}" format.name$ * }
++          if$
++        }
++      if$
++    }
++  if$
++}
++
++FUNCTION {author.key.label}
++{ author empty$
++    { key empty$
++        { cite$ #1 #3 substring$ }
++        'key
++      if$
++    }
++    { author format.lab.names }
++  if$
++}
++
++FUNCTION {author.editor.key.label}
++{ author empty$
++    { editor empty$
++        { key empty$
++            { cite$ #1 #3 substring$ }
++            'key
++          if$
++        }
++        { editor format.lab.names }
++      if$
++    }
++    { author format.lab.names }
++  if$
++}
++
++FUNCTION {author.key.organization.label}
++{ author empty$
++    { key empty$
++        { organization empty$
++            { cite$ #1 #3 substring$ }
++            { "The " #4 organization chop.word #3 text.prefix$ }
++          if$
++        }
++        'key
++      if$
++    }
++    { author format.lab.names }
++  if$
++}
++
++FUNCTION {editor.key.organization.label}
++{ editor empty$
++    { key empty$
++        { organization empty$
++            { cite$ #1 #3 substring$ }
++            { "The " #4 organization chop.word #3 text.prefix$ }
++          if$
++        }
++        'key
++      if$
++    }
++    { editor format.lab.names }
++  if$
++}
++
++FUNCTION {calc.short.authors}
++{ type$ "book" =
++  type$ "inbook" =
++  or
++    'author.editor.key.label
++    { type$ "proceedings" =
++        'editor.key.organization.label
++        { type$ "manual" =
++            'author.key.organization.label
++            'author.key.label
++          if$
++        }
++      if$
++    }
++  if$
++  'short.list :=
++}
++
++FUNCTION {calc.label}
++{ calc.short.authors
++  short.list
++  "("
++  *
++  year duplicate$ empty$
++  short.list key field.or.null = or
++     { pop$ "" }
++     'skip$
++  if$
++  *
++  'label :=
++}
++
++FUNCTION {sort.format.names}
++{ 's :=
++  #1 'nameptr :=
++  ""
++  s num.names$ 'numnames :=
++  numnames 'namesleft :=
++    { namesleft #0 > }
++    {
++      s nameptr "{vv{ } }{ll{ }}{  f{ }}{  jj{ }}" format.name$ 't :=
++      nameptr #1 >
++        {
++          "   "  *
++          namesleft #1 = t "others" = and
++            { "zzzzz" * }
++            { numnames #2 > nameptr #2 = and
++                { "zz" * year field.or.null * "   " * }
++                'skip$
++              if$
++              t sortify *
++            }
++          if$
++        }
++        { t sortify * }
++      if$
++      nameptr #1 + 'nameptr :=
++      namesleft #1 - 'namesleft :=
++    }
++  while$
++}
++
++FUNCTION {sort.format.title}
++{ 't :=
++  "A " #2
++    "An " #3
++      "The " #4 t chop.word
++    chop.word
++  chop.word
++  sortify
++  #1 global.max$ substring$
++}
++
++FUNCTION {author.sort}
++{ author empty$
++    { key empty$
++        { "to sort, need author or key in " cite$ * warning$
++          ""
++        }
++        { key sortify }
++      if$
++    }
++    { author sort.format.names }
++  if$
++}
++
++FUNCTION {author.editor.sort}
++{ author empty$
++    { editor empty$
++        { key empty$
++            { "to sort, need author, editor, or key in " cite$ * warning$
++              ""
++            }
++            { key sortify }
++          if$
++        }
++        { editor sort.format.names }
++      if$
++    }
++    { author sort.format.names }
++  if$
++}
++
++FUNCTION {author.organization.sort}
++{ author empty$
++    { organization empty$
++        { key empty$
++            { "to sort, need author, organization, or key in " cite$ * warning$
++              ""
++            }
++            { key sortify }
++          if$
++        }
++        { "The " #4 organization chop.word sortify }
++      if$
++    }
++    { author sort.format.names }
++  if$
++}
++
++FUNCTION {editor.organization.sort}
++{ editor empty$
++    { organization empty$
++        { key empty$
++            { "to sort, need editor, organization, or key in " cite$ * warning$
++              ""
++            }
++            { key sortify }
++          if$
++        }
++        { "The " #4 organization chop.word sortify }
++      if$
++    }
++    { editor sort.format.names }
++  if$
++}
++
++
++FUNCTION {presort}
++{ calc.label
++  label sortify
++  "    "
++  *
++  type$ "book" =
++  type$ "inbook" =
++  or
++    'author.editor.sort
++    { type$ "proceedings" =
++        'editor.organization.sort
++        { type$ "manual" =
++            'author.organization.sort
++            'author.sort
++          if$
++        }
++      if$
++    }
++  if$
++  "    "
++  *
++  year field.or.null sortify
++  *
++  "    "
++  *
++  cite$
++  *
++  #1 entry.max$ substring$
++  'sort.label :=
++  sort.label *
++  #1 entry.max$ substring$
++  'sort.key$ :=
++}
++
++ITERATE {presort}
++
++SORT
++
++STRINGS { longest.label last.label next.extra }
++
++INTEGERS { longest.label.width last.extra.num number.label }
++
++FUNCTION {initialize.longest.label}
++{ "" 'longest.label :=
++  #0 int.to.chr$ 'last.label :=
++  "" 'next.extra :=
++  #0 'longest.label.width :=
++  #0 'last.extra.num :=
++  #0 'number.label :=
++}
++
++FUNCTION {forward.pass}
++{ last.label label =
++    { last.extra.num #1 + 'last.extra.num :=
++      last.extra.num int.to.chr$ 'extra.label :=
++    }
++    { "a" chr.to.int$ 'last.extra.num :=
++      "" 'extra.label :=
++      label 'last.label :=
++    }
++  if$
++  number.label #1 + 'number.label :=
++}
++
++FUNCTION {reverse.pass}
++{ next.extra "b" =
++    { "a" 'extra.label := }
++    'skip$
++  if$
++  extra.label 'next.extra :=
++  extra.label
++  duplicate$ empty$
++    'skip$
++    { "{\natexlab{" swap$ * "}}" * }
++  if$
++  'extra.label :=
++  label extra.label * 'label :=
++}
++
++EXECUTE {initialize.longest.label}
++
++ITERATE {forward.pass}
++
++REVERSE {reverse.pass}
++
++FUNCTION {bib.sort.order}
++{ sort.label  'sort.key$ :=
++}
++
++ITERATE {bib.sort.order}
++
++SORT
++
++FUNCTION {begin.bib}
++{   preamble$ empty$
++    'skip$
++    { preamble$ write$ newline$ }
++  if$
++  "\begin{thebibliography}{" number.label int.to.str$ * "}" *
++  write$ newline$
++  "\providecommand{\natexlab}[1]{#1}"
++  write$ newline$
++  "\providecommand{\url}[1]{\texttt{#1}}"
++  write$ newline$
++  "\expandafter\ifx\csname urlstyle\endcsname\relax"
++  write$ newline$
++  "  \providecommand{\doi}[1]{doi: #1}\else"
++  write$ newline$
++  "  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi"
++  write$ newline$
++}
++
++EXECUTE {begin.bib}
++
++EXECUTE {init.state.consts}
++
++ITERATE {call.type$}
++
++FUNCTION {end.bib}
++{ newline$
++  "\end{thebibliography}" write$ newline$
++}
++
++EXECUTE {end.bib}
+diff --git a/paper/icml2026/icml2026.sty b/paper/icml2026/icml2026.sty
+new file mode 100644
+index 0000000..47f1fae
+--- /dev/null
++++ b/paper/icml2026/icml2026.sty
+@@ -0,0 +1,767 @@
++% File: icml2026.sty (LaTeX style file for ICML-2026, version of 2025-10-29)
++
++% This file contains the LaTeX formatting parameters for a two-column
++% conference proceedings that is 8.5 inches wide by 11 inches high.
++%
++% Modified by Hanze Dong, Alberto Bietti, and Felix Berkenkamp, 2025
++% - Revert to times for better compatibility
++% - Updated years, volume, location
++% - Added preprint version
++% - Based on the suggestion from Johan Larsson:
++%   1. Added an end-of-document safety check to ensure the affiliations or notice footnote is printed:
++%      (1) Introduces a flag \newif\ificml@noticeprinted and sets it false by default.
++%      (2) At end of document, emits a package warning if \printAffiliationsAndNotice{...} was never called.
++%   2. \printAffiliationsAndNotice now sets the flag when called: Begins with \global\icml@noticeprintedtrue.
++% - Migrated to more recent version of fancyhdr for running title in header
++%
++% Modified by Johan Larsson, 2025
++% - Use newtx instead of times, aligning serif, sans-serif, typerwriter,
++%   and math fonts.
++% - Use caption package to setup captions instead of manually defining themanually defining them.
++% - Formatted icml2026.sty and example_paper.tex
++% - Use title case for section title to 2.9
++% - Replace subfigure package with subcaption in example, since it is
++%   designed to work together with the caption package (which is now required).
++% - Remove unused label in example
++%
++% Modified by Tegan Maharaj and Felix Berkenkamp 2025: changed years, volume, location
++%
++% Modified by Jonathan Scarlett 2024: changed years, volume, location
++%
++% Modified by Sivan Sabato 2023: changed years and volume number.
++% Modified by Jonathan Scarlett 2023: added page numbers to every page
++%
++% Modified by Csaba Szepesvari 2022: changed years, PMLR ref. Turned off checking marginparwidth
++%     as marginparwidth only controls the space available for margin notes and margin notes
++%     will NEVER be used anyways in submitted versions, so there is no reason one should
++%     check whether marginparwidth has been tampered with.
++%     Also removed pdfview=FitH from hypersetup as it did not do its job; the default choice is a bit better
++%     but of course the double-column format is not supported by this hyperlink preview functionality
++%     in a completely satisfactory fashion.
++% Modified by Gang Niu 2022: Changed color to xcolor
++%
++% Modified by Iain Murray 2018: changed years, location. Remove affiliation notes when anonymous.
++%     Move times dependency from .tex to .sty so fewer people delete it.
++%
++% Modified by Daniel Roy 2017: changed byline to use footnotes for affiliations, and removed emails
++%
++% Modified by Percy Liang 12/2/2013: changed the year, location from the previous template for ICML 2014
++
++% Modified by Fei Sha 9/2/2013: changed the year, location form the previous template for ICML 2013
++%
++% Modified by Fei Sha 4/24/2013: (1) remove the extra whitespace after the
++%     first author's email address (in %the camera-ready version) (2) change the
++%     Proceeding ... of ICML 2010 to 2014 so PDF's metadata will show up %
++%     correctly
++%
++% Modified by Sanjoy Dasgupta, 2013: changed years, location
++%
++% Modified by Francesco Figari, 2012: changed years, location
++%
++% Modified by Christoph Sawade and Tobias Scheffer, 2011: added line
++% numbers, changed years
++%
++% Modified by Hal Daume III, 2010: changed years, added hyperlinks
++%
++% Modified by Kiri Wagstaff, 2009: changed years
++%
++% Modified by Sam Roweis, 2008: changed years
++%
++% Modified by Ricardo Silva, 2007: update of the ifpdf verification
++%
++% Modified by Prasad Tadepalli and Andrew Moore, merely changing years.
++%
++% Modified by Kristian Kersting, 2005, based on Jennifer Dy's 2004 version
++% - running title. If the original title is to long or is breaking a line,
++%   use \icmltitlerunning{...} in the preamble to supply a shorter form.
++%   Added fancyhdr package to get a running head.
++% - Updated to store the page size because pdflatex does compile the
++%   page size into the pdf.
++%
++% Hacked by Terran Lane, 2003:
++% - Updated to use LaTeX2e style file conventions (ProvidesPackage,
++%   etc.)
++% - Added an ``appearing in'' block at the base of the first column
++%   (thus keeping the ``appearing in'' note out of the bottom margin
++%   where the printer should strip in the page numbers).
++% - Added a package option [accepted] that selects between the ``Under
++%   review'' notice (default, when no option is specified) and the
++%   ``Appearing in'' notice (for use when the paper has been accepted
++%   and will appear).
++%
++%   Originally created as:  ml2k.sty (LaTeX style file for ICML-2000)
++%   by P. Langley (12/23/99)
++
++%%%%%%%%%%%%%%%%%%%%
++%% This version of the style file supports both a ``review'' version
++%% and a ``final/accepted'' version.  The difference is only in the
++%% text that appears in the note at the bottom of the first column of
++%% the first page.  The default behavior is to print a note to the
++%% effect that the paper is under review and don't distribute it.  The
++%% final/accepted version prints an ``Appearing in'' note.  To get the
++%% latter behavior, in the calling file change the ``usepackage'' line
++%% from:
++%%	\usepackage{icml2025}
++%% to
++%%	\usepackage[accepted]{icml2025}
++%%%%%%%%%%%%%%%%%%%%
++
++\NeedsTeXFormat{LaTeX2e}
++\ProvidesPackage{icml2026}[2025/10/29 v2.0 ICML Conference Style File]
++
++% Before 2018, \usepackage{times} was in the example TeX, but inevitably
++% not everybody did it.
++% \RequirePackage[amsthm]{newtx}
++% 2025.11.6 revert to times for better compatibility
++\RequirePackage{times}
++
++% Use fancyhdr package
++\RequirePackage{fancyhdr}
++\RequirePackage{xcolor} % changed from color to xcolor (2021/11/24)
++\RequirePackage{algorithm}
++\RequirePackage{algorithmic}
++\RequirePackage{natbib}
++\RequirePackage{eso-pic} % used by \AddToShipoutPicture
++\RequirePackage{forloop}
++\RequirePackage{url}
++\RequirePackage{caption}
++
++%%%%%%%% Options
++\DeclareOption{accepted}{%
++  \renewcommand{\Notice@String}{\ICML@appearing}
++  \gdef\isaccepted{1}
++}
++
++% === Preprint option ===
++\DeclareOption{preprint}{%%
++  \renewcommand{\Notice@String}{\ICML@preprint}%%
++  \gdef\ispreprint{1}%%
++}
++
++% Distinct preprint footer text
++\newcommand{\ICML@preprint}{%
++  \textit{Preprint. \today.}%
++}
++
++\DeclareOption{nohyperref}{%
++  \gdef\nohyperref{1}
++}
++
++% Helper flag: show real authors for accepted or preprint
++\newif\ificmlshowauthors
++\icmlshowauthorsfalse
++
++%%%%%%%%%%%%%%%%%%%%
++% This string is printed at the bottom of the page for the
++% final/accepted version of the ``appearing in'' note.  Modify it to
++% change that text.
++%%%%%%%%%%%%%%%%%%%%
++\newcommand{\ICML@appearing}{\textit{Proceedings of the
++$\mathit{43}^{rd}$ International Conference on Machine Learning},
++Seoul, South Korea. PMLR 306, 2026.
++Copyright 2026 by the author(s).}
++
++%%%%%%%%%%%%%%%%%%%%
++% This string is printed at the bottom of the page for the draft/under
++% review version of the ``appearing in'' note.  Modify it to change
++% that text.
++%%%%%%%%%%%%%%%%%%%%
++\newcommand{\Notice@String}{Preliminary work.  Under review by the
++International Conference on Machine Learning (ICML)\@.  Do not distribute.}
++
++% Cause the declared options to actually be parsed and activated
++\ProcessOptions\relax
++
++% After options are processed, decide if authors should be visible
++\ifdefined\isaccepted \icmlshowauthorstrue \fi
++\ifdefined\ispreprint \icmlshowauthorstrue \fi
++
++\ifdefined\isaccepted\else\ifdefined\ispreprint\else\ifdefined\hypersetup
++  \hypersetup{pdfauthor={Anonymous Authors}}
++\fi\fi\fi
++
++\ifdefined\nohyperref\else\ifdefined\hypersetup
++  \definecolor{mydarkblue}{rgb}{0,0.08,0.45}
++  \hypersetup{ %
++    pdftitle={},
++    pdfsubject={Proceedings of the International Conference on Machine Learning 2026},
++    pdfkeywords={},
++    pdfborder=0 0 0,
++    pdfpagemode=UseNone,
++    colorlinks=true,
++    linkcolor=mydarkblue,
++    citecolor=mydarkblue,
++    filecolor=mydarkblue,
++    urlcolor=mydarkblue,
++    }
++  \fi
++\fi
++
++
++
++% Uncomment the following for debugging.  It will cause LaTeX to dump
++% the version of the ``appearing in'' string that will actually appear
++% in the document.
++%\typeout{>> Notice string='\Notice@String'}
++
++% Change citation commands to be more like old ICML styles
++\newcommand{\yrcite}[1]{\citeyearpar{#1}}
++\renewcommand{\cite}[1]{\citep{#1}}
++
++
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++% to ensure the letter format is used. pdflatex does compile the
++% page size into the pdf. This is done using \pdfpagewidth and
++% \pdfpageheight. As Latex does not know this directives, we first
++% check whether pdflatex or latex is used.
++%
++% Kristian Kersting 2005
++%
++% in order to account for the more recent use of pdfetex as the default
++% compiler, I have changed the pdf verification.
++%
++% Ricardo Silva 2007
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++
++\paperwidth=8.5in
++\paperheight=11in
++
++% old PDFLaTex verification, circa 2005
++%
++%\newif\ifpdf\ifx\pdfoutput\undefined
++%  \pdffalse % we are not running PDFLaTeX
++%\else
++%  \pdfoutput=1 % we are running PDFLaTeX
++%  \pdftrue
++%\fi
++
++\newif\ifpdf %adapted from ifpdf.sty
++\ifx\pdfoutput\undefined
++\else
++   \ifx\pdfoutput\relax
++   \else
++     \ifcase\pdfoutput
++     \else
++       \pdftrue
++     \fi
++   \fi
++\fi
++
++\ifpdf
++%    \pdfpagewidth=\paperwidth
++%    \pdfpageheight=\paperheight
++  \setlength{\pdfpagewidth}{8.5in}
++  \setlength{\pdfpageheight}{11in}
++\fi
++
++% Physical page layout
++
++\evensidemargin -0.23in
++\oddsidemargin -0.23in
++\setlength\textheight{9.0in}
++\setlength\textwidth{6.75in}
++\setlength\columnsep{0.25in}
++\setlength\headheight{10pt}
++\setlength\headsep{10pt}
++\addtolength{\topmargin}{-20pt}
++\addtolength{\topmargin}{-0.29in}
++
++% Historically many authors tried to include packages like geometry or fullpage,
++% which change the page layout. It either makes the proceedings inconsistent, or
++% wastes organizers' time chasing authors. So let's nip these problems in the
++% bud here. -- Iain Murray 2018.
++%\RequirePackage{printlen}
++\AtBeginDocument{%
++\newif\ifmarginsmessedwith
++\marginsmessedwithfalse
++\ifdim\oddsidemargin=-16.62178pt     \else oddsidemargin has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\headheight=10.0pt             \else headheight has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\textheight=650.43pt           \else textheight has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\marginparsep=11.0pt           \else marginparsep has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\footskip=25.0pt               \else footskip has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\hoffset=0.0pt                 \else hoffset has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\paperwidth=614.295pt          \else paperwidth has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\topmargin=-24.95781pt         \else topmargin has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\headsep=10.0pt                \else headsep has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\textwidth=487.8225pt          \else textwidth has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\marginparpush=5.0pt           \else marginparpush has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\voffset=0.0pt                 \else voffset has been altered.\\ \marginsmessedwithtrue\fi
++\ifdim\paperheight=794.96999pt       \else paperheight has been altered.\\ \marginsmessedwithtrue\fi
++\ifmarginsmessedwith
++
++\textbf{\large \em The page layout violates the ICML style.}
++
++Please do not change the page layout, or include packages like geometry,
++savetrees, or fullpage, which change it for you.
++
++We're not able to reliably undo arbitrary changes to the style. Please remove
++the offending package(s), or layout-changing commands and try again.
++
++\fi}
++
++
++%% The following is adapted from code in the acmconf.sty conference
++%% style file.  The constants in it are somewhat magical, and appear
++%% to work well with the two-column format on US letter paper that
++%% ICML uses, but will break if you change that layout, or if you use
++%% a longer block of text for the copyright notice string.  Fiddle with
++%% them if necessary to get the block to fit/look right.
++%%
++%% -- Terran Lane, 2003
++%%
++%% The following comments are included verbatim from acmconf.sty:
++%%
++%%% This section (written by KBT) handles the 1" box in the lower left
++%%% corner of the left column of the first page by creating a picture,
++%%% and inserting the predefined string at the bottom (with a negative
++%%% displacement to offset the space allocated for a non-existent
++%%% caption).
++%%%
++\def\ftype@copyrightbox{8}
++\def\@copyrightspace{
++\@float{copyrightbox}[b]
++\begin{center}
++\setlength{\unitlength}{1pc}
++\begin{picture}(20,1.5)
++\put(0,2.5){\line(1,0){4.818}}
++\put(0,0){\parbox[b]{19.75pc}{\small \Notice@String}}
++\end{picture}
++\end{center}
++\end@float}
++
++\setlength\footskip{25.0pt}
++\flushbottom \twocolumn
++\sloppy
++
++% Clear out the addcontentsline command
++\def\addcontentsline#1#2#3{}
++
++%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++%%% commands for formatting paper title, author names, and addresses.
++
++% box to check the size of the running head
++\newbox\titrun
++
++% general page style
++\pagestyle{fancy}
++\fancyhf{}
++\fancyfoot[C]{\thepage}
++% set the width of the head rule to 1 point
++\renewcommand{\headrulewidth}{1pt}
++
++% definition to set the head as running head in the preamble
++\def\icmltitlerunning#1{\gdef\@icmltitlerunning{#1}}
++
++% main definition adapting \icmltitle from 2004
++\long\def\icmltitle#1{%
++
++   %check whether @icmltitlerunning exists
++   % if not \icmltitle is used as running head
++   \ifx\undefined\@icmltitlerunning%
++      \gdef\@icmltitlerunning{#1}
++   \fi
++
++   %add it to pdf information
++  \ifdefined\nohyperref\else\ifdefined\hypersetup
++     \hypersetup{pdftitle={#1}}
++   \fi\fi
++
++   %get the dimension of the running title
++   \global\setbox\titrun=\vbox{\small\bf\@icmltitlerunning}
++
++   % error flag
++   \gdef\@runningtitleerror{0}
++
++    % running title too long
++    \ifdim\wd\titrun>\textwidth%
++      \gdef\@runningtitleerror{1}%
++      % running title breaks a line
++    \else \ifdim\ht\titrun>6.25pt
++    \gdef\@runningtitleerror{2}%
++      \fi
++    \fi
++
++       % if there is somthing wrong with the running title
++    \ifnum\@runningtitleerror>0
++      \typeout{}%
++                 \typeout{}%
++                 \typeout{*******************************************************}%
++                 \typeout{Title exceeds size limitations for running head.}%
++                 \typeout{Please supply a shorter form for the running head}
++                 \typeout{with \string\icmltitlerunning{...}\space prior to \string\begin{document}}%
++      \typeout{*******************************************************}%
++      \typeout{}%
++      \typeout{}%
++      % set default running title
++      \gdef\@icmltitlerunning{Title Suppressed Due to Excessive Size}
++    \fi
++
++    % no running title on the first page of the paper
++    \thispagestyle{plain}
++
++    {\center\baselineskip 18pt
++      \toptitlebar{\Large\bf #1}\bottomtitlebar}
++}
++
++% set running title header
++\fancyhead[C]{\small\bf\@icmltitlerunning}
++
++\gdef\icmlfullauthorlist{}
++\newcommand\addstringtofullauthorlist{\g@addto@macro\icmlfullauthorlist}
++\newcommand\addtofullauthorlist[1]{%
++  \ifdefined\icmlanyauthors%
++    \addstringtofullauthorlist{, #1}%
++  \else%
++    \addstringtofullauthorlist{#1}%
++    \gdef\icmlanyauthors{1}%
++  \fi%
++  \ifdefined\hypersetup%
++    \hypersetup{pdfauthor=\icmlfullauthorlist}%
++  \fi
++}
++
++\def\toptitlebar{\hrule height1pt \vskip .25in}
++\def\bottomtitlebar{\vskip .22in \hrule height1pt \vskip .3in}
++
++\newenvironment{icmlauthorlist}{%
++  \setlength\topsep{0pt}
++  \setlength\parskip{0pt}
++  \begin{center}
++    }{%
++  \end{center}
++}
++
++\newcounter{@affiliationcounter}
++\newcommand{\@pa}[1]{%
++  \ifcsname the@affil#1\endcsname
++    % do nothing
++  \else
++    \ifcsname @icmlsymbol#1\endcsname
++      % nothing
++    \else
++      \stepcounter{@affiliationcounter}%
++      \newcounter{@affil#1}%
++      \setcounter{@affil#1}{\value{@affiliationcounter}}%
++    \fi
++  \fi%
++  \ifcsname @icmlsymbol#1\endcsname
++    \textsuperscript{\csname @icmlsymbol#1\endcsname\,}%
++  \else
++    \textsuperscript{\arabic{@affil#1}\,}%
++  \fi
++}
++
++\newcommand{\icmlauthor}[2]{%
++  \ificmlshowauthors
++    \mbox{\bf #1}\,\@for\theaffil:=#2\do{\@pa{\theaffil}} \addtofullauthorlist{#1}%
++  \else
++    \ifdefined\@icmlfirsttime\else
++      \gdef\@icmlfirsttime{1}
++      \mbox{\bf Anonymous Authors}\@pa{@anon} \addtofullauthorlist{Anonymous Authors}
++    \fi
++  \fi
++}
++
++\newcommand{\icmlsetsymbol}[2]{%
++  \expandafter\gdef\csname @icmlsymbol#1\endcsname{#2}
++}
++
++\newcommand{\icmlaffiliation}[2]{%
++  \ificmlshowauthors
++    \ifcsname the@affil#1\endcsname
++      \expandafter\gdef\csname @affilname\csname the@affil#1\endcsname\endcsname{#2}%
++    \else
++      {\bf AUTHORERR: Error in use of \textbackslash{}icmlaffiliation command. Label ``#1'' not mentioned in some \textbackslash{}icmlauthor\{author name\}\{labels here\} command beforehand. }
++      \typeout{}%
++      \typeout{}%
++      \typeout{*******************************************************}%
++      \typeout{Affiliation label undefined. }%
++      \typeout{Make sure \string\icmlaffiliation\space follows }%
++      \typeout{all of \string\icmlauthor\space commands}%
++      \typeout{*******************************************************}%
++      \typeout{}%
++      \typeout{}%
++    \fi
++  \else
++    \expandafter\gdef\csname @affilname1\endcsname{Anonymous Institution, Anonymous City, Anonymous Region, Anonymous Country}
++  \fi
++}
++
++\newcommand{\icmlcorrespondingauthor}[2]{%
++  \ificmlshowauthors
++    \ifdefined\icmlcorrespondingauthor@text
++      \g@addto@macro\icmlcorrespondingauthor@text{, #1 \textless{}#2\textgreater{}}
++    \else
++      \gdef\icmlcorrespondingauthor@text{#1 \textless{}#2\textgreater{}}
++    \fi
++  \else
++    \gdef\icmlcorrespondingauthor@text{Anonymous Author \textless{}anon.email@domain.com\textgreater{}}
++  \fi
++}
++
++\newcommand{\icmlEqualContribution}{\textsuperscript{*}Equal contribution }
++
++
++% --- ICML 2026: ensure authors do not omit the affiliations/notice footnote ---
++\newif\ificml@noticeprinted
++\icml@noticeprintedfalse
++\AtEndDocument{%
++  \ificml@noticeprinted\relax\else
++    \PackageWarningNoLine{icml2026}{%
++      You did not call \string\printAffiliationsAndNotice{}. If you have no notice,%
++      call \string\printAffiliationsAndNotice\string{} (empty braces).%
++    }%
++  \fi
++}
++
++
++\newcounter{@affilnum}
++\newcommand{\printAffiliationsAndNotice}[1]{\global\icml@noticeprintedtrue%
++  \stepcounter{@affiliationcounter}%
++  {\let\thefootnote\relax\footnotetext{\hspace*{-\footnotesep}\ificmlshowauthors #1\fi%
++      \forloop{@affilnum}{1}{\value{@affilnum} < \value{@affiliationcounter}}{
++        \textsuperscript{\arabic{@affilnum}}\ifcsname @affilname\the@affilnum\endcsname%
++          \csname @affilname\the@affilnum\endcsname%
++        \else
++          {\bf AUTHORERR: Missing \textbackslash{}icmlaffiliation.}
++        \fi
++      }.%
++      \ifdefined\icmlcorrespondingauthor@text
++         { }Correspondence to: \icmlcorrespondingauthor@text.
++      \else
++        {\bf AUTHORERR: Missing \textbackslash{}icmlcorrespondingauthor.}
++      \fi
++
++      \ \\
++      \Notice@String
++    }
++  }
++}
++
++\long\def\icmladdress#1{%
++  {\bf The \textbackslash{}icmladdress command is no longer used.  See the example\_paper PDF .tex for usage of \textbackslash{}icmlauther and \textbackslash{}icmlaffiliation.}
++}
++
++%% keywords as first class citizens
++\def\icmlkeywords#1{%
++  \ifdefined\nohyperref\else\ifdefined\hypersetup
++      \hypersetup{pdfkeywords={#1}}
++    \fi\fi
++}
++
++% modification to natbib citations
++\setcitestyle{authoryear,round,citesep={;},aysep={,},yysep={;}}
++
++% Redefinition of the abstract environment.
++\renewenvironment{abstract}
++{%
++  \centerline{\large\bf Abstract}
++  \vspace{-0.12in}\begin{quote}}
++    {\par\end{quote}\vskip 0.12in}
++
++% numbered section headings with different treatment of numbers
++
++\def\@startsection#1#2#3#4#5#6{\if@noskipsec \leavevmode \fi
++  \par \@tempskipa #4\relax
++  \@afterindenttrue
++  \ifdim \@tempskipa <\z@ \@tempskipa -\@tempskipa \fi
++  \if@nobreak \everypar{}\else
++    \addpenalty{\@secpenalty}\addvspace{\@tempskipa}\fi \@ifstar
++  {\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sict{#1}{#2}{#3}{#4}{#5}{#6}}}}
++
++\def\@sict#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
++    \def\@svsec{}\else
++    \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname}\fi
++  \@tempskipa #5\relax
++  \ifdim \@tempskipa>\z@
++    \begingroup #6\relax
++    \@hangfrom{\hskip #3\relax\@svsec.~}{\interlinepenalty \@M #8\par}
++    \endgroup
++    \csname #1mark\endcsname{#7}\addcontentsline
++    {toc}{#1}{\ifnum #2>\c@secnumdepth \else
++        \protect\numberline{\csname the#1\endcsname}\fi
++      #7}\else
++    \def\@svsechd{#6\hskip #3\@svsec #8\csname #1mark\endcsname
++      {#7}\addcontentsline
++      {toc}{#1}{\ifnum #2>\c@secnumdepth \else
++          \protect\numberline{\csname the#1\endcsname}\fi
++        #7}}\fi
++  \@xsect{#5}}
++
++\def\@sect#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
++    \def\@svsec{}\else
++    \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname\hskip 0.4em }\fi
++  \@tempskipa #5\relax
++  \ifdim \@tempskipa>\z@
++    \begingroup #6\relax
++    \@hangfrom{\hskip #3\relax\@svsec}{\interlinepenalty \@M #8\par}
++    \endgroup
++    \csname #1mark\endcsname{#7}\addcontentsline
++    {toc}{#1}{\ifnum #2>\c@secnumdepth \else
++        \protect\numberline{\csname the#1\endcsname}\fi
++      #7}\else
++    \def\@svsechd{#6\hskip #3\@svsec #8\csname #1mark\endcsname
++      {#7}\addcontentsline
++      {toc}{#1}{\ifnum #2>\c@secnumdepth \else
++          \protect\numberline{\csname the#1\endcsname}\fi
++        #7}}\fi
++  \@xsect{#5}}
++
++% section headings with less space above and below them
++\def\thesection {\arabic{section}}
++\def\thesubsection {\thesection.\arabic{subsection}}
++\def\section{\@startsection{section}{1}{\z@}{-0.12in}{0.02in}
++  {\large\bf\raggedright}}
++\def\subsection{\@startsection{subsection}{2}{\z@}{-0.10in}{0.01in}
++  {\normalsize\bf\raggedright}}
++\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-0.08in}{0.01in}
++  {\normalsize\sc\raggedright}}
++\def\paragraph{\@startsection{paragraph}{4}{\z@}{1.5ex plus
++    0.5ex minus .2ex}{-1em}{\normalsize\bf}}
++\def\subparagraph{\@startsection{subparagraph}{5}{\z@}{1.5ex plus
++    0.5ex minus .2ex}{-1em}{\normalsize\bf}}
++
++% Footnotes
++\footnotesep 6.65pt %
++\skip\footins 9pt
++\def\footnoterule{\kern-3pt \hrule width 0.8in \kern 2.6pt }
++\setcounter{footnote}{0}
++
++% Lists and paragraphs
++\parindent 0pt
++\topsep 4pt plus 1pt minus 2pt
++\partopsep 1pt plus 0.5pt minus 0.5pt
++\itemsep 2pt plus 1pt minus 0.5pt
++\parsep 2pt plus 1pt minus 0.5pt
++\parskip 6pt
++
++\leftmargin 2em \leftmargini\leftmargin \leftmarginii 2em
++\leftmarginiii 1.5em \leftmarginiv 1.0em \leftmarginv .5em
++\leftmarginvi .5em
++\labelwidth\leftmargini\advance\labelwidth-\labelsep \labelsep 5pt
++
++\def\@listi{\leftmargin\leftmargini}
++\def\@listii{\leftmargin\leftmarginii
++  \labelwidth\leftmarginii\advance\labelwidth-\labelsep
++  \topsep 2pt plus 1pt minus 0.5pt
++  \parsep 1pt plus 0.5pt minus 0.5pt
++  \itemsep \parsep}
++\def\@listiii{\leftmargin\leftmarginiii
++  \labelwidth\leftmarginiii\advance\labelwidth-\labelsep
++  \topsep 1pt plus 0.5pt minus 0.5pt
++  \parsep \z@ \partopsep 0.5pt plus 0pt minus 0.5pt
++  \itemsep \topsep}
++\def\@listiv{\leftmargin\leftmarginiv
++  \labelwidth\leftmarginiv\advance\labelwidth-\labelsep}
++\def\@listv{\leftmargin\leftmarginv
++  \labelwidth\leftmarginv\advance\labelwidth-\labelsep}
++\def\@listvi{\leftmargin\leftmarginvi
++  \labelwidth\leftmarginvi\advance\labelwidth-\labelsep}
++
++\abovedisplayskip 7pt plus2pt minus5pt%
++\belowdisplayskip \abovedisplayskip
++\abovedisplayshortskip  0pt plus3pt%
++\belowdisplayshortskip  4pt plus3pt minus3pt%
++
++% Less leading in most fonts (due to the narrow columns)
++% The choices were between 1-pt and 1.5-pt leading
++\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}
++\def\small{\@setsize\small{10pt}\ixpt\@ixpt}
++\def\footnotesize{\@setsize\footnotesize{10pt}\ixpt\@ixpt}
++\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt}
++\def\tiny{\@setsize\tiny{7pt}\vipt\@vipt}
++\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
++\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt}
++\def\LARGE{\@setsize\LARGE{20pt}\xviipt\@xviipt}
++\def\huge{\@setsize\huge{23pt}\xxpt\@xxpt}
++\def\Huge{\@setsize\Huge{28pt}\xxvpt\@xxvpt}
++
++% Revised formatting for figure captions and table titles.
++\captionsetup{
++  skip=0.1in,
++  font=small,
++  labelfont={it,small},
++  labelsep=period
++}
++\captionsetup[table]{position=above}
++\captionsetup[figure]{position=below}
++
++\def\fnum@figure{Figure \thefigure}
++\def\fnum@table{Table \thetable}
++
++% Strut macros for skipping spaces above and below text in tables.
++\def\abovestrut#1{\rule[0in]{0in}{#1}\ignorespaces}
++\def\belowstrut#1{\rule[-#1]{0in}{#1}\ignorespaces}
++
++\def\abovespace{\abovestrut{0.20in}}
++\def\aroundspace{\abovestrut{0.20in}\belowstrut{0.10in}}
++\def\belowspace{\belowstrut{0.10in}}
++
++% Various personal itemization commands.
++\def\texitem#1{\par\noindent\hangindent 12pt
++  \hbox to 12pt {\hss #1 ~}\ignorespaces}
++\def\icmlitem{\texitem{$\bullet$}}
++
++% To comment out multiple lines of text.
++\long\def\comment#1{}
++
++%% Line counter (not in final version). Adapted from NIPS style file by Christoph Sawade
++
++% Vertical Ruler
++% This code is, largely, from the CVPR 2010 conference style file
++% ----- define vruler
++\makeatletter
++\newbox\icmlrulerbox
++\newcount\icmlrulercount
++\newdimen\icmlruleroffset
++\newdimen\cv@lineheight
++\newdimen\cv@boxheight
++\newbox\cv@tmpbox
++\newcount\cv@refno
++\newcount\cv@tot
++% NUMBER with left flushed zeros  \fillzeros[<WIDTH>]<NUMBER>
++\newcount\cv@tmpc@ \newcount\cv@tmpc
++\def\fillzeros[#1]#2{\cv@tmpc@=#2\relax\ifnum\cv@tmpc@<0\cv@tmpc@=-\cv@tmpc@\fi
++  \cv@tmpc=1 %
++  \loop\ifnum\cv@tmpc@<10 \else \divide\cv@tmpc@ by 10 \advance\cv@tmpc by 1 \fi
++  \ifnum\cv@tmpc@=10\relax\cv@tmpc@=11\relax\fi \ifnum\cv@tmpc@>10 \repeat
++  \ifnum#2<0\advance\cv@tmpc1\relax-\fi
++  \loop\ifnum\cv@tmpc<#1\relax0\advance\cv@tmpc1\relax\fi \ifnum\cv@tmpc<#1 \repeat
++  \cv@tmpc@=#2\relax\ifnum\cv@tmpc@<0\cv@tmpc@=-\cv@tmpc@\fi \relax\the\cv@tmpc@}%
++% \makevruler[<SCALE>][<INITIAL_COUNT>][<STEP>][<DIGITS>][<HEIGHT>]
++\def\makevruler[#1][#2][#3][#4][#5]{
++  \begingroup\offinterlineskip
++  \textheight=#5\vbadness=10000\vfuzz=120ex\overfullrule=0pt%
++  \global\setbox\icmlrulerbox=\vbox to \textheight{%
++    {
++        \parskip=0pt\hfuzz=150em\cv@boxheight=\textheight
++        \cv@lineheight=#1\global\icmlrulercount=#2%
++        \cv@tot\cv@boxheight\divide\cv@tot\cv@lineheight\advance\cv@tot2%
++        \cv@refno1\vskip-\cv@lineheight\vskip1ex%
++        \loop\setbox\cv@tmpbox=\hbox to0cm{\hfil {\hfil\fillzeros[#4]\icmlrulercount}}%
++        \ht\cv@tmpbox\cv@lineheight\dp\cv@tmpbox0pt\box\cv@tmpbox\break
++        \advance\cv@refno1\global\advance\icmlrulercount#3\relax
++        \ifnum\cv@refno<\cv@tot\repeat
++      }
++  }
++  \endgroup
++}%
++\makeatother
++% ----- end of vruler
++
++% \makevruler[<SCALE>][<INITIAL_COUNT>][<STEP>][<DIGITS>][<HEIGHT>]
++\def\icmlruler#1{\makevruler[12pt][#1][1][3][\textheight]\usebox{\icmlrulerbox}}
++\AddToShipoutPicture{%
++  \icmlruleroffset=\textheight
++  \advance\icmlruleroffset by 5.2pt % top margin
++  \color[rgb]{.7,.7,.7}
++  \ificmlshowauthors\else
++    \AtTextUpperLeft{%
++      \put(\LenToUnit{-35pt},\LenToUnit{-\icmlruleroffset}){%left ruler
++        \icmlruler{\icmlrulercount}}
++      %\put(\LenToUnit{1.04\textwidth},\LenToUnit{-\icmlruleroffset}){%right ruler
++      %  \icmlruler{\icmlrulercount}}
++    }
++  \fi
++}
++\endinput
+diff --git a/paper/icml2026/wvh_paper.tex b/paper/icml2026/wvh_paper.tex
+new file mode 100644
+index 0000000..bdc9623
+--- /dev/null
++++ b/paper/icml2026/wvh_paper.tex
+@@ -0,0 +1,294 @@
++\documentclass{article}
++\usepackage{microtype}
++\usepackage{graphicx}
++\usepackage{subcaption}
++\usepackage{booktabs}
++\usepackage{hyperref}
++\newcommand{\theHalgorithm}{\arabic{algorithm}}
++\usepackage{icml2026}
++\usepackage{amsmath,amssymb,mathtools}
++\setlength{\bibsep}{2pt}
++
++\input{numbers}
++
++\icmltitlerunning{Where to Act versus Which Way to Move}
++
++\begin{document}
++\twocolumn[
++\icmltitle{Where to Act versus Which Way to Move:\\
++A Preregistered Factorial Pilot on One-Step\\
++Deformable Linear Object Manipulation}
++\begin{icmlauthorlist}
++  \icmlauthor{Anonymous Author}{anon}
++\end{icmlauthorlist}
++\icmlaffiliation{anon}{Anonymous Institution}
++\icmlcorrespondingauthor{Anonymous Author}{anonymous@example.com}
++\icmlkeywords{deformable object manipulation, factorial intervention, action attribution}
++\vskip 0.3in
++]
++\printAffiliationsAndNotice{}
++
++\begin{abstract}
++Hybrid contact actions $a=(p,u)$ couple a decision about \emph{where} to act
++(contact location $p$) with a decision about \emph{how} to move (motion
++parameter $u$). Methods that jointly select both factors do not reveal which
++factor carries the achieved one-step progress. We report a preregistered
++factorial intervention study on quasi-static deformable linear object (DLO)
++manipulation in a GPU-parallel rod simulator: for each canonicalized state we
++execute the complete $8{\times}8$ table of contact arc-length positions
++$\times$ fixed-magnitude planar motion directions and decompose the resulting
++one-step progress into contact, direction, and interaction contributions. We
++deliberately scope the claim narrowly: the comparison is \emph{contact-location
++choice versus fixed-magnitude planar-direction choice}, not a universal
++``where versus how,'' because the two factors have asymmetric expressiveness.
++On a pilot of \nstatestotal{} states across three tasks
++(\ncellstotal{} executed action cells, candidate \selcand{};
++preregistered scale was not reachable in the available budget), the primary
++contrast $\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ is
++$\dwhA$~[\dwhAlo, \dwhAhi] for straightening,
++$\dwhB$~[\dwhBlo, \dwhBhi] for single-bend shaping, and
++$\dwhC$~[\dwhClo, \dwhChi] for endpoint repositioning
++(simultaneous 95\% intervals; minimum preregistered effect $0.02$).
++\resultsummary{} \absguards{} We release estimand definitions, guard thresholds, and
++per-cell raw tables; we label every number as pilot-scale evidence, not
++confirmatory findings.
++\end{abstract}
++
++\section{Introduction}
++Non-prehensile and hybrid-action manipulation methods, e.g.\ HACMan-style
++actor--critic maps~\citep{zhou2023hacman} and dense affordance models for
++deformable objects~\citep{wu2023foresightful}, select a contact location and a
++motion parameter jointly. A successful action therefore does not identify
++whether performance came from selecting \emph{where} to act, \emph{how} to
++move, or a specific contact--motion pairing. This attribution gap matters for
++system design: it determines whether future effort should buy dense contact
++maps, richer motion generation, or explicit joint reasoning.
++
++We study this gap with a factorial intervention on one-step, quasi-static DLO
++manipulation. For a canonicalized rope state $s$ with goal $g$, we execute
++\emph{every} cell of an $8{\times}8$ grid of contact positions $\times$ planar
++motion directions and measure normalized one-step progress. Marginal and joint
++maxima of the resulting table decompose achievable progress into a
++contact-selection contribution, a direction-selection contribution, and an
++interaction term that is available only under joint selection.
++
++\paragraph{Narrow claim boundary.}
++The two factors are \emph{not} symmetric in expressiveness: the contact factor
++covers the full normalized arc length of the rope at 8 points, while the
++motion factor covers only 8 directions in the horizontal plane at a fixed
++displacement magnitude, with no magnitude, vertical, or rotational component.
++Equal $8{\times}8$ cardinality equalizes search budget, not representational
++completeness. All results below therefore compare \emph{contact-location
++choice versus fixed-magnitude planar-direction choice}; they are not evidence
++about ``where versus how'' in general, and an observed dominance of either
++factor can partially reflect this parameterization asymmetry.
++
++\paragraph{Contributions.}
++(i)~A preregistered factorial design for one-step DLO action attribution with
++explicit validity guards, a complete-table-or-invalid policy that separates
++invalid runs from valid null results, and fixed-priority candidate selection
++that never uses effect sign, magnitude, or $p$-values.
++(ii)~A pilot execution of this design on three tasks in a GPU rod simulator,
++with complete raw tables, controls, and uncertainty from stratified cluster
++bootstrap with simultaneous intervals.
++(iii)~An honest account of what a deadline-bounded budget allowed: the pilot
++covers \nstatespertask{} states per task on the development split; hidden-split
++confirmation and clean reproduction were not run, so no confirmatory claims
++are made.
++
++\section{Study design}
++\subsection{Environment, states, and primitive}
++We use a GPU-parallel discrete-rod simulator (a DLO benchmark environment
++built on a differentiable rod solver~\citep{cao2026dlolab}) with a 32-vertex
++rope. States are \emph{canonicalized quasi-static} configurations: an analytic
++initial centerline (stratified over shape templates) is placed, velocities are
++zeroed, and the rope is settled to a velocity threshold of $10^{-3}$ with an
++explicit cap of $10^4$ steps. The action primitive is grasp--move--release--settle
++at a chosen vertex; grasp realism is disabled in the primary condition so that
++attachment is deterministic. Placement error after canonicalization is guarded
++at $\le 10^{-4}$\,m per table (Section~2.4).
++
++Tasks are t1a \emph{straighten}, t1b \emph{single bend}, and t1c
++\emph{endpoint reposition}, each with stratified initial shapes
++(\{u\_bend, s\_curve, random\_smooth\} for t1a; additionally \{straight\} for
++t1b/t1c). Task error $D$ is a correspondence-$L_2$ distance to a goal template
++(Chamfer is forbidden as primary by preregistration). A state is eligible only
++if $D_{\text{before}} \ge 0.10$ (twice the success threshold), checked before
++any action. Action quality is normalized one-step progress
++\begin{equation}
++Y(p,u) = \frac{D_{\text{before}} - D_{\text{after}}(p,u)}
++              {\max(D_{\text{before}}, 10^{-8})}.
++\end{equation}
++
++\subsection{Factorial action grid and candidates}
++Contacts are 8 normalized arc-length positions $\sigma_i = i/7$ mapped to the
++nearest native vertex; motions are 8 planar directions at $45^\circ$
++increments. Candidate execution regimes fix displacement magnitude and lift
++height: C0 $(0.10\,\text{m}, \text{low})$, C1 $(0.05\,\text{m}, \text{low})$,
++C2 $(0.10\,\text{m}, \text{high})$, C3 $(0.05\,\text{m}, \text{high})$.
++Candidate selection is \emph{fixed-priority after hard validity}
++(C0$\to$C1$\to$C2$\to$C3): a candidate is selected iff it is the first whose
++run passes hard validity guards; effect size, sign, and $p$-values are never
++consulted. In this pilot, \selcand{} was selected\selcandreason{}.
++
++\subsection{Estimands}
++For each state's complete $8{\times}8$ table:
++$v_0=\operatorname{mean}_{p,u} Y$;\;
++$v_P=\max_p \operatorname{mean}_u Y$;\;
++$v_U=\max_u \operatorname{mean}_p Y$;\;
++$v_{PU}=\max_{p,u} Y$.
++The primary contrast per task is
++$\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ (contact-selection minus
++direction-selection value); secondary estimands are the interaction
++$I=\mathbb{E}_s[v_{PU}-v_P-v_U+v_0]$, oracle gain
++$\mathbb{E}_s[v_{PU}-v_0]$, and two-way ANOVA variance shares of the table.
++Because $v_P$, $v_U$, $v_{PU}$ are maxima, they are upward-biased under
++measurement noise and $I$ inherits a positive bias; we therefore quantify the
++noise floor directly with a zero-displacement control (identical primitive
++with zero motion), whose $|Y|$ has median \zerodeltamed{} and 99th percentile
++\zerodeltapninenine{} on this pilot, and we interpret $I$ only relative to
++this floor.
++
++\subsection{Validity and statistics}
++A table is valid only if all 64 cells complete with successful grasp,
++converged settle, finite outputs, and a re-placement error of the
++canonicalized state within the $10^{-4}$\,m reset guard; any failure
++invalidates the whole table (one retry, no cell deletion, no post-hoc state
++replacement). Invalid tables
++are reported separately from valid null results. Guards cover no-op drift
++(re-settle and re-measure the same state), repeatability (identical tables
++executed twice, including top-action equivalence with tie tolerance
++$10^{-4}$), settle convergence rate, non-finite incidents, invalid-table rate,
++and factor-dependent invalidity gaps.
++
++Uncertainty uses a stratified (task $\times$ initial-shape) cluster bootstrap
++over states with $10^4$ resamples; the three per-task primary contrasts form
++one family with studentized max-$t$ simultaneous 95\% intervals. The
++preregistered minimum absolute effect is $0.02$; a task is labeled
++\emph{contact-dominant} only if $\Delta_{WH}\ge 0.02$ with simultaneous lower
++bound $>0$, \emph{direction-dominant} symmetrically, else
++\emph{balanced/inconclusive}. Cross-task contrasts are computed on the shared
++strata \{u\_bend, s\_curve, random\_smooth\} with equal stratum weights, which
++corrects a composition confound in the original preregistration (t1b/t1c
++include a \emph{straight} stratum that t1a lacks).
++
++\subsection{Deviations from preregistration}
++This is a deadline-bounded pilot, and we report it as such:
++(1) \nstatespertask{} development-split states per task instead of the
++registered 96/64; (2) hidden-split confirmation and clean reproduction were
++not executed, so labels below are development-split evidence only;
++(3) cross-task contrasts use the shared-strata correction above;
++(4) claim language is narrowed to contact-location versus fixed-magnitude
++planar-direction choice; (5) the registered \emph{study-level} placement
++guard ($\le 10^{-4}$\,m) is operationalized per table: states whose
++canonicalized configuration cannot be re-placed within the guard yield
++invalid tables that are quarantined rather than aborting the study. The
++$8{\times}8$ grid, candidate definitions,
++priority order, eligibility rule, guards, and estimands are unchanged from the
++preregistration.
++
++\section{Results}
++\paragraph{Validity.}
++\guardlead{} Measured guard values: no-op drift median \guardnoopmed{}
++(threshold $10^{-3}$) and p99 \guardnooppninenine{} ($\le 5{\times}10^{-3}$),
++repeat top-action equivalence \guardrepagree{} ($\ge 0.99$), settle
++convergence \guardsettle{} ($\ge 0.95$), non-finite incidents
++\guardnonfinite{}, invalid-table rate \guardinvrate{} ($\le 0.02$),
++factor-dependent invalidity gap \guardfactorgap{}, placement error over used
++tables \guardplaceerrused{} ($\le 10^{-4}$).
++Throughput was \cellsps{} valid action cells/s at 512 parallel environments.
++
++\begin{table}[t]
++\centering\small
++\caption{Primary contrast $\Delta_{WH}=\mathbb{E}_s[v_P-v_U]$ per task,
++candidate \selcand{}, with studentized max-$t$ simultaneous 95\% intervals
++over the three-task family. $n$ = valid states. Labels use the preregistered
++rule with minimum effect $0.02$. Pilot scale; development split only.}
++\label{tab:primary}
++\resizebox{\columnwidth}{!}{\primarytable}
++\end{table}
++
++\begin{table}[t]
++\centering\small
++\caption{Factorial decomposition per task, candidate \selcand{}
++(state means, pointwise 95\% bootstrap CIs). $I$ is upward-biased by
++noise; compare against the zero-displacement floor
++(median \zerodeltamed, p99 \zerodeltapninenine).}
++\label{tab:decomp}
++\resizebox{\columnwidth}{!}{\decomptable}
++\end{table}
++
++\paragraph{Primary contrast.}
++Table~\ref{tab:primary} and Figure~\ref{fig:primary} give $\Delta_{WH}$ per
++task. \resultsummary{} \crosscandsummary{}
++
++\paragraph{Decomposition and interaction.}
++Table~\ref{tab:decomp} reports marginal and joint components.
++\interactionsummary{} Variance shares of the mean tables attribute
++\varsharesummary{} Figure~\ref{fig:heatmaps} shows the mean tables; the
++best cell location varies across tasks, and the table structure (row versus
++column striping) visually matches the sign of $\Delta_{WH}$.
++
++\begin{figure}[t]
++\centering
++\includegraphics[width=\linewidth]{fig_heatmaps.pdf}
++\caption{Mean one-step progress $Y$ over states for each task (candidate
++\selcand). Rows: contact arc-length $\sigma$; columns: planar motion angle.
++Star: best mean cell.}
++\label{fig:heatmaps}
++\end{figure}
++
++\begin{figure}[t]
++\centering
++\includegraphics[width=\linewidth]{fig_primary.pdf}
++\caption{$\Delta_{WH}$ per task and candidate with simultaneous 95\%
++intervals; shaded band is the preregistered minimum effect $\pm 0.02$.}
++\label{fig:primary}
++\end{figure}
++
++\begin{figure}[t]
++\centering
++\includegraphics[width=\linewidth]{fig_decomposition.pdf}
++\caption{Factorial decomposition per task (candidate \selcand): contact main
++effect $v_P{-}v_0$, direction main effect $v_U{-}v_0$, interaction $I$, and
++joint oracle gain $v_{PU}{-}v_0$.}
++\label{fig:decomp}
++\end{figure}
++
++\paragraph{Cross-task contrasts (shared strata).}
++On the shared strata with equal weights, the t1c$-$t1a interaction difference
++(preregistered H3) is \hthree{}~[\hthreelo, \hthreehi]. \hthreesummary{}
++
++\paragraph{Interpretation caveats.}
++A negative $\Delta_{WH}$ need not mean direction \emph{knowledge} is more
++valuable in a constructive sense: a wrong planar direction actively pushes the
++rope away from the goal ($Y<0$), while a wrong contact is often merely
++unhelpful ($Y\approx 0$), so direction selection can dominate through
++avoidance of harm. The sign structure of $v_0$ (grand mean
++\vzerosummary) bounds how much of the effect is harm-avoidance. Second, the
++asymmetric factor expressiveness (Section~1) means magnitude comparisons
++between factors are parameterization-relative.
++
++\section{Limitations}
++This is a pilot: \nstatespertask{} states per task on the development split,
++one simulator, one rope parameterization, no hidden-split confirmation, no
++clean reproduction, and no grasp realism. Effects are one-step, greedy
++quantities on canonicalized quasi-static states; they do not imply multi-step
++policy design conclusions. The motion factor omits magnitude, vertical, and
++rotational components; a $16{\times}16$ resolution probe and a
++magnitude-augmented motion factor are the registered follow-ups. Sample sizes
++imply wide intervals; per-task labels of \emph{balanced/inconclusive} should
++be read as underpowered, not as evidence of equality.
++
++\section{Conclusion}
++We provide a preregistration-faithful, guard-validated pilot answering how
++much one-step DLO progress is attributable to contact-location versus
++fixed-magnitude planar-direction selection. The design --- complete factorial
++tables, complete-table-or-invalid, effect-blind candidate selection, invalid
++vs.\ null separation --- is reusable at full scale, and all per-cell raw data,
++configs, and seeds are released for exact reproduction.
++
++\bibliographystyle{icml2026}
++\bibliography{references}
++
++\end{document}
+diff --git a/scripts/where_vs_how_analysis.py b/scripts/where_vs_how_analysis.py
+index 80f7d4c..c5e5520 100644
+--- a/scripts/where_vs_how_analysis.py
++++ b/scripts/where_vs_how_analysis.py
+@@ -560,6 +560,24 @@ def main():
+             selected = cand
+     selection["selected"] = selected
+ 
++    # The paper's validity statement is about the fixed-priority candidate
++    # actually selected for inference, not the union of exploratory regimes.
++    # Preserve union-wide diagnostics, then expose selected-candidate hard
++    # guards at the top level consumed by reporting and packaging.
++    guards["all_candidates_hard_info"] = {
++        name: {
++            "value": guards.get(name),
++            "status": guards["evaluated"].get(name),
++        }
++        for name in hard_guards
++    }
++    if selected is not None:
++        selected_hard = selection["per_candidate"][selected]["hard_guards"]
++        guards["selected_candidate"] = selected
++        for name in hard_guards:
++            guards[name] = selected_hard[name]["value"]
++            guards["evaluated"][name] = selected_hard[name]["status"]
++
+     results = {"per_candidate": {}}
+     for cand in candidates_present:
+         crecs = [r for r in recs if r["candidate"] == cand and r["tag"] == ""]
+diff --git a/scripts/where_vs_how_package.py b/scripts/where_vs_how_package.py
+index 24f52f0..0472dbe 100644
+--- a/scripts/where_vs_how_package.py
++++ b/scripts/where_vs_how_package.py
+@@ -50,7 +50,8 @@ def main():
+     for f in Path(args.figures).glob("fig_*"):
+         shutil.copy(f, out / "figures" / f.name)
+     (out / "paper").mkdir(exist_ok=True)
+-    for name in ("paper.pdf", "paper.tex", "numbers.tex", "references.bib"):
++    for name in ("paper.pdf", "paper.tex", "numbers.tex", "references.bib",
++                 "submission_metadata.md"):
+         src = Path(args.paper) / name
+         if src.exists():
+             shutil.copy(src, out / "paper" / name)
+diff --git a/scripts/where_vs_how_paper.py b/scripts/where_vs_how_paper.py
+index f670e2a..4db96f0 100644
+--- a/scripts/where_vs_how_paper.py
++++ b/scripts/where_vs_how_paper.py
+@@ -42,7 +42,7 @@ def main():
+     ap.add_argument("--figures", required=True)
+     ap.add_argument("--out", required=True)
+     ap.add_argument("--cellsps", default="--")
+-    ap.add_argument("--template", default="scripts/paper/wvh_paper.tex")
++    ap.add_argument("--template", default="paper/icml2026/wvh_paper.tex")
+     ap.add_argument("--bib", default="research/where-vs-how-phase1/references.seed.bib")
+     args = ap.parse_args()
+ 
+@@ -282,21 +282,28 @@ def main():
+     lines = [f"\\newcommand{{\\{name}}}{{{val}}}" for name, val in m.items()]
+     (out / "numbers.tex").write_text("\n".join(lines) + "\n")
+ 
+-    shutil.copy(args.template, out / "paper.tex")
++    template_path = Path(args.template)
++    shutil.copy(template_path, out / "paper.tex")
+     shutil.copy(args.bib, out / "references.bib")
++    for name in ("icml2026.sty", "icml2026.bst", "fancyhdr.sty",
++                 "algorithm.sty", "algorithmic.sty"):
++        src = template_path.parent / name
++        if src.exists():
++            shutil.copy(src, out / name)
+     for fig in Path(args.figures).glob("fig_*.pdf"):
+         shutil.copy(fig, out / fig.name)
+ 
+     def latex(cmd):
+         return subprocess.run(cmd, cwd=out, capture_output=True, text=True)
+ 
++    pdf = out / "paper.pdf"
++    pdf.unlink(missing_ok=True)
+     latex(["pdflatex", "-interaction=nonstopmode", "paper.tex"])
+     latex(["bibtex", "paper"])
+     latex(["pdflatex", "-interaction=nonstopmode", "paper.tex"])
+     r = latex(["pdflatex", "-interaction=nonstopmode", "paper.tex"])
+     if r.returncode != 0:
+         print(f"[paper] pdflatex rc={r.returncode}\n{r.stdout[-3000:]}")
+-    pdf = out / "paper.pdf"
+     if pdf.exists():
+         import re
+         mpg = re.search(r"Output written on paper\.pdf \((\d+) pages", r.stdout)
+diff --git a/scripts/where_vs_how_retry_driver.py b/scripts/where_vs_how_retry_driver.py
+index c35a9f7..5975422 100644
+--- a/scripts/where_vs_how_retry_driver.py
++++ b/scripts/where_vs_how_retry_driver.py
+@@ -24,11 +24,25 @@ def main():
+     ap.add_argument("--split", default="dev")
+     ap.add_argument("--n-envs", type=int, default=512)
+     ap.add_argument("--out", default="/root/wvh")
++    ap.add_argument(
++        "--candidates", default="C0",
++        help="comma-separated fixed-priority candidates to retry (default: C0)",
++    )
+     args = ap.parse_args()
+ 
+     out_dir = Path(args.out)
+-    states = json.load(gzip.open(out_dir / f"states_{args.split}.json.gz", "rt"))
+-    by_id = {s["state_id"]: s for s in states}
++    allowed = set(args.candidates.split(","))
++    # An operator-side state search may replace states_dev.json.gz.  Build a
++    # union keyed by state_id and prefer the canonical pilot backup for noop.
++    state_paths = [
++        out_dir / f"states_{args.split}32_operator.json.gz",
++        out_dir / f"states_{args.split}.json.gz",
++    ]
++    state_sets = [json.load(gzip.open(path, "rt")) for path in state_paths if path.exists()]
++    if not state_sets:
++        raise SystemExit("no state suite found for retry")
++    states = state_sets[0]
++    by_id = {s["state_id"]: s for suite in state_sets for s in suite}
+ 
+     need = defaultdict(list)  # candidate -> [state dict]
+     for path in sorted(glob.glob(str(out_dir / f"tables_{args.split}_C*.jsonl.gz"))):
+@@ -38,6 +52,8 @@ def main():
+             if r.get("tag", "") == "":
+                 groups[(r["candidate"], r["state_id"])].append(r)
+         for (cand, sid), cell_rows in sorted(groups.items()):
++            if cand not in allowed:
++                continue
+             _, val = table_from_rows(cell_rows)
+             if not val["valid"]:
+                 need[cand].append(by_id[sid])
+-- 
+2.43.0
+

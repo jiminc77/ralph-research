@@ -1,1 +1,1 @@
-Evaluate whether multi-seed aggregation improves reproducible candidate selection within a fixed compute budget.
+[Contact와 planar motion direction의 상대 기여가 task에 따라 달라지는 현상]을 [동일 canonicalized quasi-static DLO state의 8×8 factorial intervention]으로 분해하여 [Where·How·contact–motion interaction의 one-step effect와 uncertainty]를 측정함.
