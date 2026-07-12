@@ -1,4 +1,4 @@
-# ralph-research
+# 🦞 ralph-research
 
 **Where to Act or Which Way to Move** — when a robot manipulates a rope-like deformable object, does one-step success come from *where* it grabs, *which direction* it pushes, or their *interaction*?
 
