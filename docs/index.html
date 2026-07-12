@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>어디를 잡을까, 어느 방향으로 움직일까? — 논문 쉽게 읽기</title>
+<meta name="description" content="ICML 2026 심사 중 논문 'Where to Act or Which Way to Move?'를 누구나 이해할 수 있게 풀어낸 해설 페이지">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ============ Design tokens (DESIGN-expo.md) ============ */
+:root{
+  --primary:#000000;
+  --primary-active:#1a1a1a;
+  --text-link:#0d74ce;
+  --ink:#171717;
+  --body:#60646c;
+  --muted:#999999;
+  --muted-soft:#cccccc;
+  --hairline:#f0f0f3;
+  --hairline-soft:#f5f5f7;
+  --hairline-strong:#dcdee0;
+  --canvas:#ffffff;
+  --canvas-soft:#fafafa;
+  --surface-card:#ffffff;
+  --surface-strong:#f0f0f3;
+  --surface-dark:#171717;
+  --surface-dark-elev:#1a1a1a;
+  --on-primary:#ffffff;
+  --on-dark:#ffffff;
+  --on-dark-soft:#b0b4ba;
+  --sky-light:#cfe7ff;
+  --sky-mid:#a8c8e8;
+  --warning:#ab6400;
+  --preview:#8145b5;
+  --link-bright:#47c2ff;
+  --success:#16a34a;
+  --error:#eb8e90;
+  --font-sans:'Inter',-apple-system,system-ui,sans-serif;
+  --font-mono:'JetBrains Mono','Fira Code',monospace;
+  --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-pill:9999px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-sans);
+  font-size:16px; font-weight:400; line-height:1.5;
+  color:var(--body); background:var(--canvas);
+  -webkit-font-smoothing:antialiased;
+}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+section{padding:96px 0;scroll-margin-top:88px}
+a{color:var(--text-link);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{color:var(--ink);font-weight:600}
+
+/* ============ Typography ============ */
+h1{font-size:clamp(32px,6vw,64px);font-weight:600;line-height:1.05;letter-spacing:-0.03em;color:var(--ink)}
+h2{font-size:clamp(28px,4vw,36px);font-weight:600;line-height:1.15;letter-spacing:-1.08px;color:var(--ink)}
+h3{font-size:clamp(22px,3vw,28px);font-weight:600;line-height:1.2;letter-spacing:-0.84px;color:var(--ink)}
+.display-sm{font-size:22px;font-weight:600;line-height:1.25;letter-spacing:-0.5px;color:var(--ink)}
+.title-md{font-size:18px;font-weight:600;line-height:1.4;color:var(--ink)}
+.title-sm{font-size:16px;font-weight:600;line-height:1.4;color:var(--ink)}
+.body-sm{font-size:14px;line-height:1.5}
+.caption{font-size:13px;line-height:1.4;color:var(--muted)}
+.mono{font-family:var(--font-mono);font-size:13px}
+
+/* ============ Badges & buttons ============ */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface-strong);color:var(--ink);
+  border-radius:var(--r-pill);padding:4px 10px;
+  font-size:11px;font-weight:600;line-height:1.4;letter-spacing:.88px;text-transform:uppercase;
+}
+.badge .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:40px;padding:0 18px;border-radius:var(--r-md);
+  font-family:var(--font-sans);font-size:14px;font-weight:500;line-height:1;
+  cursor:pointer;text-decoration:none;border:none;transition:background .15s,border-color .15s;
+}
+.btn:hover{text-decoration:none}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-primary:hover{background:var(--primary-active)}
+.btn-secondary{background:var(--surface-card);color:var(--ink);border:1px solid var(--hairline-strong)}
+.btn-secondary:hover{border-color:var(--muted-soft)}
+
+/* ============ Top nav ============ */
+.top-nav{
+  position:sticky;top:0;z-index:50;height:64px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--hairline);
+}
+.top-nav .container{height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.wordmark{font-weight:600;font-size:16px;color:var(--ink);letter-spacing:-.2px;white-space:nowrap}
+.wordmark .mono-tag{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-left:8px;letter-spacing:0}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:14px;font-weight:500;line-height:1.4;color:var(--ink)}
+.nav-links a:hover{color:var(--text-link);text-decoration:none}
+.nav-cta{display:flex;align-items:center;gap:12px}
+
+/* ============ Hero ============ */
+.hero{position:relative;padding:96px 0 72px;text-align:center;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(1100px 520px at 50% -8%, var(--sky-light) 0%, rgba(207,231,255,.42) 42%, rgba(255,255,255,0) 72%),
+    radial-gradient(700px 360px at 50% 4%, rgba(168,200,232,.28) 0%, rgba(255,255,255,0) 65%);
+}
+.hero .container{position:relative}
+.hero .badge{background:rgba(255,255,255,.75);border:1px solid var(--hairline-strong)}
+.hero h1{margin:20px auto 18px;max-width:820px}
+.hero .sub{max-width:640px;margin:0 auto 32px;font-size:16px}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+
+/* Device-mockup window */
+.window{
+  max-width:960px;margin:0 auto;background:var(--surface-card);
+  border:1px solid var(--hairline-strong);border-radius:var(--r-xl);overflow:hidden;
+  box-shadow:0 32px 80px -36px rgba(23,42,58,.28),0 4px 12px rgba(0,0,0,.04);
+  text-align:left;
+}
+.window-bar{
+  height:40px;display:flex;align-items:center;gap:6px;padding:0 16px;
+  border-bottom:1px solid var(--hairline);background:var(--canvas-soft);
+}
+.window-bar .wdot{width:10px;height:10px;border-radius:50%;background:var(--surface-strong);border:1px solid var(--hairline-strong)}
+.window-bar .wtitle{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-left:10px}
+.window-body{padding:28px}
+.hm-row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.hm-block{min-width:0}
+.hm-block .hm-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.hm-block .hm-note{font-size:12px;color:var(--muted);margin-bottom:10px}
+.heatmap{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.heatmap .cell{aspect-ratio:1;border-radius:2px;position:relative}
+.heatmap .cell .star{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--ink);
+}
+.hm-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+.colorbar-wrap{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:24px}
+.colorbar{width:220px;height:10px;border-radius:var(--r-pill);border:1px solid var(--hairline);
+  background:linear-gradient(90deg,#2a5a8a 0%, #ffffff 55%, #ab6400 100%)}
+.colorbar-wrap span{font-size:12px;color:var(--muted)}
+.window-caption{text-align:center;margin-top:16px}
+
+/* ============ Stat band ============ */
+.stat-band{border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:var(--canvas)}
+.stat-band .container{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding-top:36px;padding-bottom:36px}
+.stat .stat-label{font-size:11px;font-weight:600;letter-spacing:.88px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .stat-value{font-size:28px;font-weight:600;letter-spacing:-0.84px;color:var(--ink);line-height:1.2}
+.stat .stat-desc{font-size:13px;color:var(--body);margin-top:4px}
+
+/* ============ Sections / cards ============ */
+.section-head{max-width:720px;margin-bottom:48px}
+.section-head .badge{margin-bottom:16px}
+.section-head h2{margin-bottom:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{
+  background:var(--surface-card);border:1px solid var(--hairline-strong);
+  border-radius:var(--r-lg);padding:24px;transition:box-shadow .2s;
+}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.card .title-md{margin-bottom:8px}
+.card p{font-size:14px}
+.card-dark{
+  background:var(--surface-dark);border:1px solid var(--surface-dark);
+  border-radius:var(--r-lg);padding:24px;color:var(--on-dark);
+}
+.card-dark .title-md{color:var(--on-dark);margin-bottom:8px}
+.card-dark p{color:var(--on-dark-soft);font-size:14px}
+.num-plate{
+  width:32px;height:32px;border-radius:var(--r-md);background:var(--surface-strong);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:13px;color:var(--ink);margin-bottom:14px;
+}
+.callout{
+  background:var(--canvas-soft);border:1px solid var(--hairline-strong);
+  border-left:3px solid var(--warning);border-radius:var(--r-md);
+  padding:20px;font-size:14px;
+}
+.callout .callout-title{font-weight:600;color:var(--warning);font-size:13px;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px}
+
+/* ============ Code block ============ */
+.code-block{
+  background:var(--surface-dark);color:var(--on-dark);
+  border-radius:var(--r-lg);padding:24px;overflow-x:auto;
+  font-family:var(--font-mono);font-size:13px;line-height:1.8;
+  white-space:pre;
+}
+.code-block .c{color:#8a8f98}
+.code-block .k{color:var(--link-bright)}
+.code-block .v{color:#ffd28a}
+
+/* ============ Rope SVG card ============ */
+.figure-card{background:var(--surface-card);border:1px solid var(--hairline-strong);border-radius:var(--r-lg);padding:24px}
+.figure-card svg{width:100%;height:auto;display:block}
+.figure-card figcaption{margin-top:12px}
+
+/* ============ Demo ============ */
+.demo-card{background:var(--surface-card);border:1px solid var(--hairline-strong);border-radius:var(--r-lg);padding:32px}
+.demo-layout{display:grid;grid-template-columns:minmax(0,380px) 1fr;gap:40px;align-items:start}
+.demo-grid-wrap{display:flex;gap:10px}
+.demo-ylabel{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;color:var(--muted);text-align:center}
+.demo-grid-col{flex:1;min-width:0}
+.demo-xlabel{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+#demo-heatmap .cell{cursor:default;transition:opacity .18s;border-radius:3px}
+#demo-heatmap .cell.dim{opacity:.15}
+#demo-heatmap .cell.pick{outline:2px solid var(--ink);outline-offset:-1px;z-index:1}
+.strategy-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip-btn{
+  height:36px;padding:0 14px;border-radius:var(--r-md);
+  border:1px solid var(--hairline-strong);background:var(--surface-card);
+  font-family:var(--font-sans);font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.chip-btn:hover{border-color:var(--muted-soft)}
+.chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.readout{
+  background:var(--canvas-soft);border:1px solid var(--hairline);border-radius:var(--r-md);
+  padding:16px;font-size:14px;min-height:112px;
+}
+.readout .readout-value{font-family:var(--font-mono);font-size:20px;color:var(--ink);display:block;margin-bottom:6px}
+
+/* ============ Results ============ */
+.result-card .delta{font-family:var(--font-mono);font-size:26px;color:var(--ink);letter-spacing:-.5px;margin:14px 0 2px}
+.result-card .ci{font-size:12px;color:var(--muted);font-family:var(--font-mono);margin-bottom:12px}
+.result-card .heatmap{margin-bottom:16px}
+.pill-label{display:inline-flex;align-items:center;gap:6px;background:var(--surface-strong);color:var(--ink);
+  border-radius:var(--r-pill);padding:4px 10px;font-size:11px;font-weight:600;letter-spacing:.88px;text-transform:uppercase}
+.pill-label .dot{width:7px;height:7px;border-radius:50%}
+.dot-contact{background:var(--ink)}
+.dot-direction{background:var(--text-link)}
+.dot-tie{background:var(--muted)}
+.dot-interaction{background:var(--preview)}
+
+/* variance bars */
+.vbar-row{margin-bottom:18px}
+.vbar-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.vbar-head .t{font-weight:600;color:var(--ink)}
+.vbar-head .n{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.vbar{display:flex;height:14px;border-radius:var(--r-pill);overflow:hidden;background:var(--surface-strong)}
+.vbar span{height:100%}
+.seg-contact{background:var(--ink)}
+.seg-direction{background:var(--text-link)}
+.seg-interaction{background:var(--preview)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.legend .li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--body)}
+.legend .sw{width:10px;height:10px;border-radius:3px}
+
+/* ============ Dark honesty band ============ */
+.dark-band{
+  background:var(--surface-dark);border-radius:var(--r-lg);
+  padding:64px 48px;color:var(--on-dark);
+}
+.dark-band h2{color:var(--on-dark)}
+.dark-band .lead{color:var(--on-dark-soft);max-width:720px;margin:16px 0 40px}
+.dark-band .badge{background:var(--surface-dark-elev);color:var(--on-dark-soft);border:1px solid #2c2c2c}
+.dark-mini{background:var(--surface-dark-elev);border:1px solid #2c2c2c;border-radius:var(--r-lg);padding:24px}
+.dark-mini .title-md{color:var(--on-dark)}
+.dark-mini p{color:var(--on-dark-soft);font-size:14px}
+.dark-mini .mono-big{font-family:var(--font-mono);font-size:22px;color:var(--on-dark);display:block;margin-bottom:10px}
+
+/* ============ Lists ============ */
+.clean-list{list-style:none}
+.clean-list li{
+  padding:14px 0 14px 30px;position:relative;font-size:15px;
+  border-bottom:1px solid var(--hairline);
+}
+.clean-list li:last-child{border-bottom:none}
+.clean-list li::before{
+  content:"";position:absolute;left:4px;top:22px;width:6px;height:6px;border-radius:50%;background:var(--muted-soft);
+}
+
+/* ============ Glossary ============ */
+.gloss-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.gloss{background:var(--surface-card);border:1px solid var(--hairline-strong);border-radius:var(--r-lg);padding:20px}
+.gloss .term{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.2px}
+.gloss .term .ko{display:block;font-size:12px;color:var(--muted);font-weight:400;margin:2px 0 8px}
+.gloss p{font-size:13px;line-height:1.55}
+
+/* ============ CTA band & footer ============ */
+.cta-band{text-align:center;padding:96px 0}
+.cta-band h2{margin-bottom:16px}
+.cta-band p{max-width:560px;margin:0 auto 28px}
+footer{border-top:1px solid var(--hairline);padding:64px 0 48px;background:var(--canvas)}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:32px}
+.footer-grid .fh{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px}
+.footer-grid p, .footer-grid a{font-size:14px;color:var(--body)}
+.footer-grid ul{list-style:none}
+.footer-grid li{margin-bottom:8px}
+.footer-bottom{margin-top:48px;padding-top:24px;border-top:1px solid var(--hairline);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.footer-bottom span{font-size:13px;color:var(--muted)}
+
+/* ============ Responsive ============ */
+@media (max-width:1024px){
+  .grid-3,.gloss-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .demo-layout{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:768px){
+  .nav-links{display:none}
+  section{padding:64px 0}
+  .hm-row{grid-template-columns:1fr}
+  .hm-block{max-width:340px;margin:0 auto}
+  .stat-band .container{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+  .dark-band{padding:40px 24px}
+}
+@media (max-width:640px){
+  .grid-3,.grid-4,.gloss-grid,.footer-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body id="top">
+
+<!-- ================= NAV ================= -->
+<nav class="top-nav">
+  <div class="container">
+    <span class="wordmark">DLO 진단 리포트<span class="mono-tag">paper-explainer</span></span>
+    <div class="nav-links">
+      <a href="#summary">한 줄 요약</a>
+      <a href="#background">왜 어려운가</a>
+      <a href="#method">실험 방법</a>
+      <a href="#results">결과</a>
+      <a href="#honesty">정직성 리포트</a>
+      <a href="#glossary">용어 사전</a>
+    </div>
+    <div class="nav-cta">
+      <a class="btn btn-primary" href="#paper-info">논문 정보</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="container">
+    <span class="badge">ICML 2026 심사 중 · 사전등록 파일럿 연구</span>
+    <h1>어디를 잡을까,<br>어느 방향으로 움직일까?</h1>
+    <p class="sub">로봇이 로프처럼 <strong>흐물흐물한 물체</strong>를 다룰 때, 성공은 <strong>잡는 위치</strong>에서 올까요, <strong>미는 방향</strong>에서 올까요? 가능한 조합을 전부 실행해 답을 따져본 논문을 한 페이지로 쉽게 풀었습니다.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="#summary">3분 요약부터 보기</a>
+      <a class="btn btn-secondary" href="#glossary">용어부터 보기</a>
+    </div>
+
+    <div class="window">
+      <div class="window-bar">
+        <span class="wdot"></span><span class="wdot"></span><span class="wdot"></span>
+        <span class="wtitle">experiment-dashboard — 상태별 8×8 진전도 테이블</span>
+      </div>
+      <div class="window-body">
+        <div class="hm-row">
+          <div class="hm-block">
+            <div class="hm-title">t1a 곧게 펴기</div>
+            <div class="hm-note">가로 줄무늬 → <strong>위치</strong>가 좌우</div>
+            <div class="heatmap" id="hm-a"></div>
+            <div class="hm-axis"><span>↕ 잡는 위치</span><span>미는 방향 ↔</span></div>
+          </div>
+          <div class="hm-block">
+            <div class="hm-title">t1b 한 번 접기</div>
+            <div class="hm-note">얼룩덜룩 → <strong>짝(조합)</strong>이 좌우</div>
+            <div class="heatmap" id="hm-b"></div>
+            <div class="hm-axis"><span>↕ 잡는 위치</span><span>미는 방향 ↔</span></div>
+          </div>
+          <div class="hm-block">
+            <div class="hm-title">t1c 끝점 옮기기</div>
+            <div class="hm-note">세로 줄무늬 → <strong>방향</strong>이 좌우</div>
+            <div class="heatmap" id="hm-c"></div>
+            <div class="hm-axis"><span>↕ 잡는 위치</span><span>미는 방향 ↔</span></div>
+          </div>
+        </div>
+        <div class="colorbar-wrap">
+          <span>악화 (Y &lt; 0)</span>
+          <div class="colorbar"></div>
+          <span>진전 (Y &gt; 0)</span>
+          <span style="color:var(--ink)">★ 최고의 칸</span>
+        </div>
+      </div>
+    </div>
+    <p class="caption window-caption">논문 Figure 1의 패턴을 개념적으로 재구성한 그림입니다 (실제 수치 아님).</p>
+  </div>
+</header>
+
+<!-- ================= STAT BAND ================= -->
+<div class="stat-band">
+  <div class="container">
+    <div class="stat">
+      <div class="stat-label">상태당 조합</div>
+      <div class="stat-value">8 × 8 = 64</div>
+      <div class="stat-desc">잡는 위치 8곳 × 미는 방향 8개, 전부 실행</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">실행된 액션</div>
+      <div class="stat-value">12,288</div>
+      <div class="stat-desc">GPU 병렬 시뮬레이터, 512개 환경 동시 구동</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">과제</div>
+      <div class="stat-value">3종</div>
+      <div class="stat-desc">곧게 펴기 · 한 번 접기 · 끝점 옮기기</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">무효 테이블</div>
+      <div class="stat-value">42 / 192</div>
+      <div class="stat-desc">숨기지 않고 전부 공개 — 이 논문의 백미</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SUMMARY ================= -->
+<section id="summary">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Summary · 한 줄 요약</span>
+      <h2>정답은 "과제마다 다르다".<br>그리고 진짜 주인공은 "조합"이다.</h2>
+      <p>로프를 <strong>곧게 펼 때</strong>는 어디를 잡느냐가, <strong>끝점을 옮길 때</strong>는 어느 방향으로 미느냐가 더 중요했습니다. 하지만 두 과제 모두에서 가장 큰 효과는 위치와 방향의 <strong>궁합(상호작용)</strong>이었습니다. 단, 저자들 스스로 밝히듯 이 수치들은 품질 검증을 완전히 통과하지 못한 <strong>파일럿(예비) 증거</strong>입니다.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="pill-label"><span class="dot dot-contact"></span>위치 우세</span>
+        <div class="title-md" style="margin-top:14px">곧게 펴기는 '위치' 싸움</div>
+        <p>Δ<sub>WH</sub> = <strong>+0.041</strong>. 좋은 지점을 잡기만 하면 어느 방향으로 당겨도 대체로 통합니다. 히트맵이 <strong>가로 줄무늬</strong>인 이유죠.</p>
+      </div>
+      <div class="card">
+        <span class="pill-label"><span class="dot dot-direction"></span>방향 우세</span>
+        <div class="title-md" style="margin-top:14px">끝점 옮기기는 '방향' 싸움</div>
+        <p>Δ<sub>WH</sub> = <strong>−0.130</strong>. 어디를 잡든 미는 방향이 목표를 향해야 합니다. 히트맵이 <strong>세로 줄무늬</strong>로 뒤집힙니다.</p>
+      </div>
+      <div class="card">
+        <span class="pill-label"><span class="dot dot-tie"></span>판정 유보</span>
+        <div class="title-md" style="margin-top:14px">한 번 접기는 무승부</div>
+        <p>Δ<sub>WH</sub> = <strong>−0.034</strong>, 신뢰구간이 0을 포함해 <strong>balanced/inconclusive</strong>. 대신 위치·방향의 궁합이 결과를 지배합니다.</p>
+      </div>
+    </div>
+    <div class="card-dark" style="margin-top:20px">
+      <div class="title-md">중요한 각주 — 이건 "확정 결론"이 아닙니다</div>
+      <p>사전에 등록한 데이터 품질 기준(가드)을 어떤 실행 조건도 통과하지 못했기 때문에, 논문은 모든 수치를 <strong style="color:#fff">서술적 파일럿 증거</strong>로 스스로 강등했습니다. 자세한 이야기는 <a href="#honesty" style="color:var(--link-bright)">정직성 리포트</a>에서.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BACKGROUND ================= -->
+<section id="background" style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Background · 왜 어려운가</span>
+      <h2>로프를 다루는 로봇의 두 가지 고민</h2>
+    </div>
+    <div class="grid-2" style="align-items:start;gap:40px">
+      <div>
+        <p style="margin-bottom:16px">로프·케이블·전선 같은 <strong>변형 가능한 선형 물체(DLO)</strong>는 로봇에게 여전히 난제입니다. 모양이 무한히 변하고(고차원 상태), 만져야만 움직일 수 있고(접촉 매개), 한 점을 잡아도 나머지는 마음대로 안 됩니다(저작동).</p>
+        <p style="margin-bottom:16px">그래서 실용 시스템은 <strong>하이브리드 액션</strong>을 씁니다 — <strong>① 어디를 잡을지(접촉 위치 p)</strong> 고르고, <strong>② 어떻게 움직일지(모션 명령 u)</strong> 정하는 2단 구조입니다. 문제는 기존 벤치마크가 <strong>둘을 합친 최종 점수만</strong> 매긴다는 것. 성공해도 그것이 위치를 잘 골라서인지, 방향을 잘 골라서인지 알 수 없습니다.</p>
+        <p style="margin-bottom:16px">이 귀속(attribution)이 중요한 이유: 다음 모델링 노력을 <strong>더 촘촘한 접촉 지도</strong>에 쓸지, <strong>더 풍부한 모션 생성</strong>에 쓸지, <strong>둘의 공동 추론</strong>에 쓸지가 여기서 갈리기 때문입니다.</p>
+        <div class="callout">
+          <div class="callout-title">좁은 주장 경계 (Narrow claim)</div>
+          두 인자는 표현력이 대칭이 아닙니다. 위치 인자는 로프 <strong>전체 길이</strong>를 8등분해 커버하지만, 방향 인자는 <strong>고정된 이동 거리의 평면 8방향</strong>뿐(크기·수직·회전 없음). 그래서 이 논문의 비교는 "어디 vs 어떻게" 일반론이 아니라 <strong>"접촉 위치 선택 vs 고정 크기 평면 방향 선택"</strong>이라는 좁은 질문입니다 — 저자들이 직접 강조하는 경계입니다.
+        </div>
+      </div>
+      <figure class="figure-card">
+        <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="로프 위 접촉 위치와 8방향 모션 개념도">
+          <defs>
+            <marker id="ah-ink" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L7,3 L0,6 Z" fill="#171717"/>
+            </marker>
+            <marker id="ah-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L7,3 L0,6 Z" fill="#dcdee0"/>
+            </marker>
+          </defs>
+          <!-- rope -->
+          <path d="M 50 225 C 130 120, 220 275, 340 185 S 530 90, 630 170" fill="none" stroke="#171717" stroke-width="6" stroke-linecap="round"/>
+          <!-- contact ticks along rope -->
+          <circle cx="50" cy="225" r="4" fill="#dcdee0"/>
+          <circle cx="128" cy="170" r="4" fill="#dcdee0"/>
+          <circle cx="205" cy="205" r="4" fill="#dcdee0"/>
+          <circle cx="272" cy="207" r="4" fill="#dcdee0"/>
+          <circle cx="412" cy="146" r="4" fill="#dcdee0"/>
+          <circle cx="487" cy="118" r="4" fill="#dcdee0"/>
+          <circle cx="560" cy="128" r="4" fill="#dcdee0"/>
+          <circle cx="630" cy="170" r="4" fill="#dcdee0"/>
+          <!-- chosen contact -->
+          <circle cx="340" cy="185" r="11" fill="#ffffff" stroke="#171717" stroke-width="3"/>
+          <circle cx="340" cy="185" r="4" fill="#171717"/>
+          <!-- 8 direction arrows -->
+          <line x1="372" y1="185" x2="404" y2="185" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="362" y1="207" x2="385" y2="230" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="340" y1="217" x2="340" y2="249" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="318" y1="207" x2="295" y2="230" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="308" y1="185" x2="276" y2="185" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="318" y1="163" x2="295" y2="140" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="340" y1="153" x2="340" y2="121" stroke="#dcdee0" stroke-width="2" marker-end="url(#ah-gray)"/>
+          <line x1="362" y1="163" x2="388" y2="137" stroke="#171717" stroke-width="3" marker-end="url(#ah-ink)"/>
+          <!-- labels -->
+          <text x="50" y="266" font-family="Inter, sans-serif" font-size="13" fill="#60646c">로프 (DLO) — 32개 정점으로 시뮬레이션</text>
+          <text x="128" y="140" font-family="Inter, sans-serif" font-size="13" fill="#60646c">잡는 위치 후보 8곳 (호길이 등분)</text>
+          <text x="398" y="122" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#171717">선택한 방향 u</text>
+          <text x="365" y="272" font-family="Inter, sans-serif" font-size="13" fill="#60646c">45° 간격 8방향, 이동 거리는 고정</text>
+          <text x="272" y="176" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#171717" text-anchor="end">접촉 위치 p</text>
+        </svg>
+        <figcaption class="caption">하나의 액션 = (접촉 위치 p, 모션 방향 u). 매 상태에서 8×8 = 64가지를 모두 실행합니다.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= METHOD ================= -->
+<section id="method">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Method · 실험 방법</span>
+      <h2>학습된 정책을 조사하는 대신,<br>모든 경우의 수를 직접 실행했다</h2>
+      <p>이 논문은 새 알고리즘을 제안하지 않습니다. 대신 고전 통계의 <strong>완전요인설계</strong>(모든 조합을 빠짐없이 실험)를 <strong>액션 공간</strong>에 적용했습니다. 모델도, 추측도 없이 "직접 개입"으로 측정합니다.</p>
+    </div>
+    <div class="grid-4">
+      <div class="card">
+        <div class="num-plate">1</div>
+        <div class="title-md">상태 표준화</div>
+        <p>로프를 정해진 초기 모양으로 놓고 속도를 0으로 리셋, 완전히 정지할 때까지 안정화. 배치 오차는 10⁻⁴ m 이내여야 합니다(이 가드가 나중에 사건의 발단이 됩니다).</p>
+      </div>
+      <div class="card">
+        <div class="num-plate">2</div>
+        <div class="title-md">64조합 전부 실행</div>
+        <p>잡기 → 이동 → 놓기 → 안정화 프리미티브로 8위치 × 8방향을 모두 실행. GPU 병렬 로드 시뮬레이터에서 초당 5.42개의 유효 셀을 처리합니다.</p>
+      </div>
+      <div class="card">
+        <div class="num-plate">3</div>
+        <div class="title-md">진전도 Y 기록</div>
+        <p>목표 모양과의 오차가 얼마나 줄었는지를 정규화: <strong>Y = 1</strong>이면 한 번에 해결, <strong>0</strong>이면 제자리, <strong>음수</strong>면 오히려 악화.</p>
+      </div>
+      <div class="card">
+        <div class="num-plate">4</div>
+        <div class="title-md">표에서 네 값 읽기</div>
+        <p>완성된 8×8 표는 "무엇을 아는 게 얼마나 값진가"를 그대로 알려줍니다. 아래 수식과 데모에서 확인하세요.</p>
+      </div>
+    </div>
+
+    <pre class="code-block" style="margin-top:32px"><span class="c"># 한 걸음 진전도 — 목표 오차가 얼마나 줄었나 (비율)</span>
+<span class="k">Y(p, u)</span> = (D_before − D_after(p, u)) / D_before
+
+<span class="c"># 8×8 표에서 읽는 네 가지 "지식 수준"</span>
+<span class="k">v0</span>  = mean(Y)             <span class="c"># 아무 칸이나 찍기 (운)</span>
+<span class="k">vP</span>  = max_p mean_u Y      <span class="c"># 잡을 위치만 잘 알 때 (최고의 행)</span>
+<span class="k">vU</span>  = max_u mean_p Y      <span class="c"># 밀 방향만 잘 알 때 (최고의 열)</span>
+<span class="k">vPU</span> = max_(p,u) Y         <span class="c"># 둘 다 알 때 (최고의 칸)</span>
+
+<span class="c"># 핵심 지표</span>
+<span class="k">Δ_WH</span> = E[vP − vU]            <span class="c"># 양수 → 위치가 더 값짐 · 음수 → 방향이 더 값짐</span>
+<span class="k">I</span>    = E[vPU − vP − vU + v0] <span class="c"># 상호작용 — 어느 한쪽만으론 설명 안 되는 "짝"의 가치</span></pre>
+
+    <!-- ===== Interactive demo ===== -->
+    <div class="demo-card" style="margin-top:32px">
+      <div class="title-md" style="margin-bottom:4px">직접 눌러보기 — 네 가지 지식 수준</div>
+      <p class="caption" style="margin-bottom:24px">개념 예시 데이터입니다(t1b 유형의 얼룩덜룩한 표). 버튼을 누르면 각 전략이 표에서 무엇을 "아는" 것인지 표시됩니다.</p>
+      <div class="demo-layout">
+        <div>
+          <div class="demo-grid-wrap">
+            <div class="demo-ylabel">잡는 위치 p (8행)</div>
+            <div class="demo-grid-col">
+              <div class="heatmap" id="demo-heatmap"></div>
+              <div class="demo-xlabel">미는 방향 u (8열, 45° 간격)</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="strategy-btns">
+            <button class="chip-btn active" data-s="v0">① 아무 칸이나</button>
+            <button class="chip-btn" data-s="vP">② 위치만 안다</button>
+            <button class="chip-btn" data-s="vU">③ 방향만 안다</button>
+            <button class="chip-btn" data-s="vPU">④ 둘 다 안다</button>
+          </div>
+          <div class="readout" id="demo-readout"></div>
+          <p class="caption" style="margin-top:14px">실험 조건(후보 실행 체계): 이동 거리와 들어올림 높이는 C0(0.10 m·낮음)–C3까지 4가지로 고정해 두고 우선순위 규칙으로 선택하도록 사전등록 — 효과 크기를 보고 고르는 것을 원천 차단했습니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="results" style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Results · 결과</span>
+      <h2>인자의 중요도는 과제를 따라 뒤집힌다</h2>
+      <p>개발 분할의 유효한 C0 테이블 40개(상태 12/13/15개), 분석 셀 2,560개 기준. Δ<sub>WH</sub>의 신뢰구간은 세 과제를 한 가족으로 묶은 동시 95% 구간이고, 라벨은 사전등록된 규칙(최소 효과 0.02)을 <strong>서술적으로</strong> 적용한 것입니다.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card result-card">
+        <div class="heatmap" id="hm-ra"></div>
+        <div class="title-sm">t1a 곧게 펴기 <span class="caption">(n=12)</span></div>
+        <div class="delta">Δ<sub>WH</sub> = +0.041</div>
+        <div class="ci">[+0.029, +0.053]</div>
+        <span class="pill-label"><span class="dot dot-contact"></span>위치 우세</span>
+        <p style="margin-top:14px">좋은 지점만 잡으면 여러 방향이 통합니다 — 표가 <strong>행 방향으로</strong> 줄무늬.</p>
+      </div>
+      <div class="card result-card">
+        <div class="heatmap" id="hm-rb"></div>
+        <div class="title-sm">t1b 한 번 접기 <span class="caption">(n=13)</span></div>
+        <div class="delta">Δ<sub>WH</sub> = −0.034</div>
+        <div class="ci">[−0.073, +0.005] — 0 포함</div>
+        <span class="pill-label"><span class="dot dot-tie"></span>판정 유보</span>
+        <p style="margin-top:14px">신뢰구간이 0을 걸쳐 어느 쪽 우세도 선언 불가. 특정 <strong>위치·방향 짝</strong>만 통합니다.</p>
+      </div>
+      <div class="card result-card">
+        <div class="heatmap" id="hm-rc"></div>
+        <div class="title-sm">t1c 끝점 옮기기 <span class="caption">(n=15)</span></div>
+        <div class="delta">Δ<sub>WH</sub> = −0.130</div>
+        <div class="ci">[−0.161, −0.100]</div>
+        <span class="pill-label"><span class="dot dot-direction"></span>방향 우세</span>
+        <p style="margin-top:14px">목표 쪽으로 밀어야만 합니다 — 표가 <strong>열 방향으로</strong> 줄무늬.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:64px" class="grid-2">
+      <div>
+        <span class="badge"><span class="dot dot-interaction"></span>Interaction · 상호작용</span>
+        <h3 style="margin:16px 0 12px">그런데 진짜 큰 효과는 '짝'이었다</h3>
+        <p style="margin-bottom:14px">곧게 펴기의 상호작용은 <strong>I = +0.228</strong>, 한 번 접기는 <strong>+0.154</strong> — 각각 어느 단독 인자보다 큽니다. 표 분산에서 상호작용이 차지하는 몫이 <strong>86%, 76%</strong>에 달하죠. 최고의 칸은 "좋은 위치 + 좋은 방향"의 합이 아니라 <strong>특정한 짝</strong>이라는 뜻입니다. 끝점 옮기기만 예외로 상호작용이 거의 없습니다(+0.007).</p>
+        <p>둘 다 알 때의 이득(vPU − v0)은 세 과제 모두 <strong>+0.30 ~ +0.40</strong> — 아무렇게나 행동할 때보다 목표 오차를 30~40%p 더 줄입니다.</p>
+      </div>
+      <div class="card">
+        <div class="title-sm" style="margin-bottom:20px">분산 기여율 — 무엇이 표를 흔드는가</div>
+        <div class="vbar-row">
+          <div class="vbar-head"><span class="t">t1a 곧게 펴기</span><span class="n">12 / 2 / 86 %</span></div>
+          <div class="vbar"><span class="seg-contact" style="width:12%"></span><span class="seg-direction" style="width:2%"></span><span class="seg-interaction" style="width:86%"></span></div>
+        </div>
+        <div class="vbar-row">
+          <div class="vbar-head"><span class="t">t1b 한 번 접기</span><span class="n">8 / 16 / 76 %</span></div>
+          <div class="vbar"><span class="seg-contact" style="width:8%"></span><span class="seg-direction" style="width:16%"></span><span class="seg-interaction" style="width:76%"></span></div>
+        </div>
+        <div class="vbar-row">
+          <div class="vbar-head"><span class="t">t1c 끝점 옮기기</span><span class="n">12 / 66 / 21 %</span></div>
+          <div class="vbar"><span class="seg-contact" style="width:12%"></span><span class="seg-direction" style="width:66%"></span><span class="seg-interaction" style="width:21%"></span></div>
+        </div>
+        <div class="legend">
+          <span class="li"><span class="sw" style="background:var(--ink)"></span>접촉 위치</span>
+          <span class="li"><span class="sw" style="background:var(--text-link)"></span>모션 방향</span>
+          <span class="li"><span class="sw" style="background:var(--preview)"></span>상호작용</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:40px">
+      <div class="callout-title">해석 주의 2가지</div>
+      <strong>① "방향 우세" ≠ "방향 지식이 더 유익".</strong> 잘못된 방향은 적극적으로 해를 끼치고(Y &lt; 0) 잘못된 위치는 그저 무익한(Y ≈ 0) 경우가 많아, 방향 우세는 <strong>피해 회피</strong>를 반영할 수 있습니다. 실제로 표 전체 평균 v0가 세 과제 모두 음수(−0.151 / −0.142 / −0.066)입니다. <strong>② 라벨은 실행 체계에 한정.</strong> 이동 거리·들어올림 조건(C0–C3)을 바꾸면 Δ<sub>WH</sub>의 부호가 일관되지 않아, 위 라벨들은 C0 조건에서의 관찰일 뿐입니다.
+    </div>
+  </div>
+</section>
+
+<!-- ================= HONESTY ================= -->
+<section id="honesty">
+  <div class="container">
+    <div class="dark-band">
+      <span class="badge">Integrity · 정직성 리포트</span>
+      <h2 style="margin-top:16px">이 논문의 백미:<br>실패를 1페이지부터 공개한다</h2>
+      <p class="lead">저자들은 실험 전에 규칙을 공증(사전등록)해 두었습니다 — "무효 테이블 비율이 2%를 넘는 실행 조건은 선택하지 않는다." 그런데 실제 무효율은 <strong style="color:#fff">21.9% (42/192)</strong>. 원인은 가설이 아니라 <strong style="color:#fff">리셋 시스템의 결함</strong>이었습니다: 6개 상태에서 로프 재배치 오차가 기준(10⁻⁴ m)의 최대 64배까지 벗어난 것. 규칙은 규칙이므로, 어떤 조건도 공식 선택되지 않았습니다.</p>
+      <div class="grid-3">
+        <div class="dark-mini">
+          <span class="mono-big">Guard</span>
+          <div class="title-md">가드 — 사전에 정한 문지방</div>
+          <p>64칸 중 하나라도 잡기 실패·발산·재배치 오차가 나면 표 전체를 무효 처리. 사후에 기준을 완화하거나 셀만 골라내는 것을 금지했습니다.</p>
+        </div>
+        <div class="dark-mini">
+          <span class="mono-big">Quarantine</span>
+          <div class="title-md">격리 — 오염 데이터 차단</div>
+          <p>무효 테이블 42개는 평균에 절대 섞지 않고 격리·공개. 분석에 쓰인 표들 자체는 신호 품질 검사(반복 재현성 1.000, 안정화 수렴 99.6%)를 통과했습니다.</p>
+        </div>
+        <div class="dark-mini">
+          <span class="mono-big">Downgrade</span>
+          <div class="title-md">강등 — 결론의 지위 낮추기</div>
+          <p>후보 선택이 효과 크기를 보지 않는(effect-blind) 규칙이었기에, "확증 결과"가 아닌 <strong style="color:#fff">서술적 파일럿 증거</strong>로의 강등이 신뢰할 수 있게 성립합니다.</p>
+        </div>
+      </div>
+      <p style="color:var(--on-dark-soft);font-size:14px;margin-top:32px">그 밖의 사전등록 이탈도 모두 명시: 상태 수 축소(등록 96/64 → 실제 12/13/15), 히든 분할 미실행, 주장 범위 축소 등. 부풀리는 대신 깎아서 보고하는 드문 사례입니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LESSONS ================= -->
+<section id="lessons" style="padding-top:0">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Lessons · 시사점</span>
+      <h2>그래서 무엇을 바꿔야 하나</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="title-md">액션 설계자에게</div>
+        <ul class="clean-list">
+          <li><strong>개수가 같다고 공평한 게 아니다.</strong> 8위치는 로프 전체를, 8방향은 모션 공간의 얇은 조각만 커버 — 귀속 연구는 이런 <strong>표현력 감사</strong>를 함께 공개해야 합니다(16×16·크기 추가 후속 실험 등록됨).</li>
+          <li><strong>인자 중요도는 과제의 속성이다.</strong> "어디(where)"에 용량을 몰아주는 아키텍처(밀집 affordance 맵 + 얇은 모션 헤드)는 과제 의존적 편향을 안고 시작합니다.</li>
+          <li><strong>상호작용이 크면 따로 점수 매기지 마라.</strong> 3과제 중 2개에서 짝의 가치가 지배적 — 접촉·모션의 <strong>공동 스코어링</strong>을 유지할 근거입니다.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="title-md">벤치마크 설계자에게</div>
+        <ul class="clean-list">
+          <li><strong>리셋 충실도는 1급 속성.</strong> 테이블별 배치 검사가 없었다면 이 결함은 모든 추정치를 조용히 오염시켰을 것 — 시뮬레이터는 결정적 재배치를 노출하고 검사해야 합니다.</li>
+          <li><strong>최댓값 통계엔 노이즈 플로어 대조가 필요.</strong> 표에서 뽑은 최댓값은 위로 치우칩니다. 제로 변위 대조(|Y| 중앙값 1.4×10⁻³)가 바닥선 역할을 했습니다.</li>
+          <li><strong>가드 임계값은 규모를 내다봐야.</strong> 2% 기준은 이 파일럿 규모에선 후보당 무효 표 1개 미만만 허용 — 국소 결함 하나로 전멸합니다. 표본 크기에 비례하는 임계나 격리 의미론이 필요합니다.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="title-md">한계 (논문이 직접 나열)</div>
+      <p>과제당 12~15개 상태의 개발 분할뿐인 파일럿 · 시뮬레이터 1종, 로프 파라미터 1종, 잡기 현실성 비활성화 · 한 걸음(greedy) 지표라 다단계 정책 결론 불가 · 방향 인자에 크기·수직·회전 없음 · 실행 조건 간 부호 불안정 · 넓은 구간은 검정력 부족이지 "동등하다"는 증거가 아님.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GLOSSARY ================= -->
+<section id="glossary" style="background:var(--canvas-soft);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)">
+  <div class="container">
+    <div class="section-head">
+      <span class="badge">Glossary · 용어 사전</span>
+      <h2>10개 용어만 알면 원문도 읽힌다</h2>
+    </div>
+    <div class="gloss-grid">
+      <div class="gloss"><div class="term">Deformable Linear Object (DLO)<span class="ko">변형 가능한 선형 물체</span></div><p>로프·케이블·전선처럼 길고 흐물흐물한 물체. 상태가 고차원이고 접촉해야만 움직여서 로봇에겐 고난도.</p></div>
+      <div class="gloss"><div class="term">Quasi-static<span class="ko">준정적</span></div><p>휙 던지는 동역학 없이, 움직였다가 완전히 멈춘 상태끼리 비교하는 설정. 인과를 깔끔하게 따지기 위한 선택.</p></div>
+      <div class="gloss"><div class="term">Canonicalization<span class="ko">정준화</span></div><p>매 실험 전에 로프를 정확히 같은 초기 상태로 되돌리는 절차. 이 재배치의 오차가 이번 연구 최대의 복병이었음.</p></div>
+      <div class="gloss"><div class="term">Full Factorial Design<span class="ko">완전요인설계</span></div><p>인자들의 모든 조합(여기선 8×8=64)을 빠짐없이 실행하는 고전 실험설계. 각 인자의 몫과 상호작용을 분해할 수 있음.</p></div>
+      <div class="gloss"><div class="term">Preregistration<span class="ko">사전등록</span></div><p>실험 전에 가설·규칙·기준을 못박아 공개하는 것. "결과 보고 규칙 바꾸기"를 차단하는 신뢰 장치.</p></div>
+      <div class="gloss"><div class="term">Validity Guard · Invalid Table<span class="ko">가드 · 무효 테이블</span></div><p>데이터 품질 문지방. 한 칸이라도 실패하면 표 전체를 버리는 엄격 규칙 — 42/192개가 여기 걸려 격리됨.</p></div>
+      <div class="gloss"><div class="term">Δ<sub>WH</sub> (Where − How)<span class="ko">위치−방향 대비</span></div><p>"위치만 알 때 가치(vP) − 방향만 알 때 가치(vU)"의 상태 평균. 양수면 위치 우세, 음수면 방향 우세.</p></div>
+      <div class="gloss"><div class="term">Interaction (I)<span class="ko">상호작용</span></div><p>둘 다 알 때의 가치에서 각 단독 지식의 몫을 뺀 나머지 = "짝"의 가치. 이 논문의 숨은 주인공.</p></div>
+      <div class="gloss"><div class="term">Candidate Execution Regime<span class="ko">후보 실행 체계</span></div><p>이동 거리·들어올림 높이 등 나머지 자유도를 통째로 고정한 설정(C0~C3). 효과를 안 보고 우선순위로만 선택.</p></div>
+      <div class="gloss"><div class="term">Cluster Bootstrap<span class="ko">클러스터 부트스트랩</span></div><p>상태 단위로 재표집해 불확실성을 재는 방법. 과제·초기모양으로 층화해 10⁴번 재표집, 동시 95% 구간 산출.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta-band" style="padding-bottom:96px">
+  <div class="container">
+    <h2>더 깊이 보고 싶다면</h2>
+    <p>원문은 본문 5쪽 분량이며, 셀 단위 원자료·설정·시드가 공개됩니다. 이 페이지의 모든 수치는 원문 기준이되, 해설과 그림은 이해를 돕기 위한 재구성입니다.</p>
+    <a class="btn btn-primary" href="#summary">핵심 요약 다시 보기</a>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer id="paper-info">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="fh">원문 정보</div>
+        <p><strong>Where to Act or Which Way to Move? Diagnosing Contact and Direction in Deformable Object Manipulation</strong></p>
+        <p style="margin-top:8px">익명 저자 · ICML 2026 심사 중 (예비 연구, 배포 주의 문구 포함) · 본문 5쪽</p>
+      </div>
+      <div>
+        <div class="fh">바로가기</div>
+        <ul>
+          <li><a href="#summary" style="color:var(--body)">한 줄 요약</a></li>
+          <li><a href="#method" style="color:var(--body)">실험 방법</a></li>
+          <li><a href="#results" style="color:var(--body)">결과</a></li>
+          <li><a href="#honesty" style="color:var(--body)">정직성 리포트</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fh">핵심 수치</div>
+        <ul>
+          <li><span class="mono" style="color:var(--body)">Δ_WH +0.041 / −0.034 / −0.130</span></li>
+          <li><span class="mono" style="color:var(--body)">I +0.228 / +0.154 / +0.007</span></li>
+          <li><span class="mono" style="color:var(--body)">무효율 0.219 (가드 0.02)</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fh">이 페이지에 대해</div>
+        <p>원문 PDF를 바탕으로 제작된 비공식 해설입니다. 히트맵은 논문 그림의 패턴을 본뜬 개념도이며 실제 데이터가 아닙니다. 정확한 수치와 주장은 항상 원문이 우선합니다.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>학습용 해설 페이지 · 2026</span>
+      <span>디자인: Expo 스타일 토큰 시스템 기반</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- deterministic PRNG ---------- */
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var clamp = function(v,a,b){ return Math.max(a, Math.min(b, v)); };
+
+  /* ---------- matrix generators (conceptual, not real data) ---------- */
+  function matRows(){ // t1a: row-striped (contact dominates)
+    var r = mulberry32(11);
+    var rowBase = [-0.34,-0.27,0.17,-0.22,0.03,-0.31,0.11,-0.25];
+    var m = [];
+    for(var i=0;i<8;i++){ m.push([]);
+      for(var j=0;j<8;j++){
+        m[i].push(clamp(rowBase[i] + (r()-0.5)*0.10, -0.5, 0.42));
+      }}
+    return m;
+  }
+  function matPatches(){ // t1b: patchy (interaction dominates)
+    var r = mulberry32(23);
+    var bumps = [[1,6,0.62],[3,3,0.5],[6,1,0.56],[5,5,0.34]];
+    var m = [];
+    for(var i=0;i<8;i++){ m.push([]);
+      for(var j=0;j<8;j++){
+        var v = -0.24 + (r()-0.5)*0.10;
+        for(var k=0;k<bumps.length;k++){
+          var d2 = (i-bumps[k][0])*(i-bumps[k][0]) + (j-bumps[k][1])*(j-bumps[k][1]);
+          v += bumps[k][2] * Math.exp(-d2/1.4);
+        }
+        m[i].push(clamp(v, -0.5, 0.42));
+      }}
+    return m;
+  }
+  function matCols(){ // t1c: column-striped (direction dominates)
+    var r = mulberry32(37);
+    var colBase = [-0.30,-0.06,0.15,-0.27,-0.19,0.19,-0.32,-0.10];
+    var m = [];
+    for(var i=0;i<8;i++){ m.push([]);
+      for(var j=0;j<8;j++){
+        m[i].push(clamp(colBase[j] + (r()-0.5)*0.10, -0.5, 0.42));
+      }}
+    return m;
+  }
+
+  /* ---------- color scale: deep blue (bad) -> white (0) -> warm (good) ---------- */
+  var NEG = [42,90,138], POS = [171,100,0], W = [255,255,255];
+  function mix(a,b,t){
+    return "rgb(" + Math.round(a[0]+(b[0]-a[0])*t) + "," +
+                    Math.round(a[1]+(b[1]-a[1])*t) + "," +
+                    Math.round(a[2]+(b[2]-a[2])*t) + ")";
+  }
+  function color(v){
+    if (v < 0) return mix(W, NEG, clamp(-v/0.5, 0, 1));
+    return mix(W, POS, clamp(v/0.45, 0, 1));
+  }
+
+  /* ---------- render heatmap ---------- */
+  function argmax2d(m){
+    var bi=0,bj=0,bv=-Infinity;
+    for(var i=0;i<8;i++)for(var j=0;j<8;j++){ if(m[i][j]>bv){bv=m[i][j];bi=i;bj=j;} }
+    return [bi,bj,bv];
+  }
+  function render(id, m, withStar){
+    var el = document.getElementById(id);
+    if(!el) return null;
+    var best = argmax2d(m), cells = [];
+    for(var i=0;i<8;i++){ cells.push([]);
+      for(var j=0;j<8;j++){
+        var c = document.createElement("div");
+        c.className = "cell";
+        c.style.background = color(m[i][j]);
+        c.title = "위치 " + (i+1) + " · 방향 " + (j+1) + " · Y ≈ " + m[i][j].toFixed(2);
+        if(withStar && i===best[0] && j===best[1]){
+          var s = document.createElement("span");
+          s.className = "star"; s.textContent = "★";
+          c.appendChild(s);
+        }
+        el.appendChild(c); cells[i].push(c);
+      }}
+    return cells;
+  }
+
+  var mA = matRows(), mB = matPatches(), mC = matCols();
+  render("hm-a", mA, true);
+  render("hm-b", mB, true);
+  render("hm-c", mC, true);
+  render("hm-ra", mA, true);
+  render("hm-rb", mB, true);
+  render("hm-rc", mC, true);
+
+  /* ---------- interactive demo (uses mB) ---------- */
+  var demoCells = render("demo-heatmap", mB, false);
+  var readout = document.getElementById("demo-readout");
+  if (!demoCells || !readout) return;
+
+  function stats(m){
+    var sum=0, rowMeans=[], colSums=[0,0,0,0,0,0,0,0];
+    for(var i=0;i<8;i++){
+      var rs=0;
+      for(var j=0;j<8;j++){ rs+=m[i][j]; colSums[j]+=m[i][j]; sum+=m[i][j]; }
+      rowMeans.push(rs/8);
+    }
+    var colMeans = colSums.map(function(s){return s/8;});
+    var bestRow=0, bestCol=0;
+    for(var i2=1;i2<8;i2++){ if(rowMeans[i2]>rowMeans[bestRow]) bestRow=i2; }
+    for(var j2=1;j2<8;j2++){ if(colMeans[j2]>colMeans[bestCol]) bestCol=j2; }
+    var bc = argmax2d(m);
+    return {
+      v0: sum/64,
+      vP: rowMeans[bestRow], bestRow: bestRow,
+      vU: colMeans[bestCol], bestCol: bestCol,
+      vPU: bc[2], bestCell: bc
+    };
+  }
+  var st = stats(mB);
+  function fmt(v){ return (v>=0?"+":"") + v.toFixed(3); }
+
+  var STRATEGIES = {
+    v0: {
+      value: "v0 = " + fmt(st.v0),
+      text: "전략 ① 아무 칸이나 찍기 — 표 전체의 평균입니다. 음수라는 것은, 아무렇게나 행동하면 로프가 오히려 목표에서 멀어진다는 뜻.",
+      mark: function(){ /* nothing highlighted */ }
+    },
+    vP: {
+      value: "vP = " + fmt(st.vP),
+      text: "전략 ② 잡을 위치만 안다 — 평균이 가장 좋은 행(" + (st.bestRow+1) + "번 위치)을 고르고, 방향은 운에 맡깁니다.",
+      mark: function(){
+        for(var j=0;j<8;j++){ demoCells[st.bestRow][j].classList.remove("dim"); demoCells[st.bestRow][j].classList.add("pick"); }
+      }
+    },
+    vU: {
+      value: "vU = " + fmt(st.vU),
+      text: "전략 ③ 밀 방향만 안다 — 평균이 가장 좋은 열(" + (st.bestCol+1) + "번 방향)을 고르고, 위치는 운에 맡깁니다.",
+      mark: function(){
+        for(var i=0;i<8;i++){ demoCells[i][st.bestCol].classList.remove("dim"); demoCells[i][st.bestCol].classList.add("pick"); }
+      }
+    },
+    vPU: {
+      value: "vPU = " + fmt(st.vPU) + "   ·   Δ_WH = vP − vU = " + fmt(st.vP - st.vU),
+      text: "전략 ④ 둘 다 안다 — 최고의 칸 하나를 정확히 짚습니다. 단독 지식(vP, vU)의 합으로 설명되지 않는 격차가 곧 상호작용입니다.",
+      mark: function(){
+        var b = st.bestCell;
+        demoCells[b[0]][b[1]].classList.remove("dim");
+        demoCells[b[0]][b[1]].classList.add("pick");
+      }
+    }
+  };
+
+  function apply(key){
+    for(var i=0;i<8;i++)for(var j=0;j<8;j++){
+      demoCells[i][j].classList.remove("pick");
+      if(key==="v0"){ demoCells[i][j].classList.remove("dim"); }
+      else { demoCells[i][j].classList.add("dim"); }
+    }
+    var s = STRATEGIES[key];
+    s.mark();
+    readout.innerHTML = '<span class="readout-value">' + s.value + '</span>' + s.text +
+      ' <span class="caption">(개념 예시 값)</span>';
+  }
+
+  var btns = document.querySelectorAll(".chip-btn");
+  btns.forEach(function(b){
+    b.addEventListener("click", function(){
+      btns.forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      apply(b.getAttribute("data-s"));
+    });
+  });
+  apply("v0");
+})();
+</script>
+<noscript><div style="text-align:center;padding:16px;color:#999;font-size:13px">히트맵과 데모는 JavaScript가 필요합니다. 본문 내용은 그대로 읽을 수 있습니다.</div></noscript>
+</body>
+</html>
