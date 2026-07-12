@@ -55,7 +55,7 @@ the negative validity conclusion are preserved verbatim.
 
 ## References
 
-- 25 entries, all verified against primary sources; no invented metadata.
+- 24 entries, all verified against primary sources; no invented metadata.
 - Added: Chi et al., *Iterative Residual Policy for Goal-Conditioned Dynamic
   Manipulation of Deformable Objects*, RSS 2022 (metadata verified from
   roboticsproceedings.org p016), cited in Related Work.
