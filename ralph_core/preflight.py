@@ -13,6 +13,7 @@ from typing import Any
 
 from .bootstrap import RepoStateError, ensure_repo
 from .resolver import ModelResolver, ResolverError
+from .schemas import sha256_file
 
 
 @dataclass(frozen=True)
@@ -90,20 +91,33 @@ class Preflight:
             missing = [name for name in ("python", "git") if not shutil.which(name)]
             if missing:
                 return False, "missing: " + ", ".join(missing)
-            for command in (["python", "--version"], ["git", "--version"]):
-                subprocess.run(
+            versions = {}
+            for name, command in (
+                ("python", ["python", "--version"]),
+                ("git", ["git", "--version"]),
+            ):
+                completed = subprocess.run(
                     command,
                     check=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
                 )
+                versions[name] = (completed.stdout or completed.stderr).strip()
             for name in ("latex", "chromium"):
                 if self.seam(name) is not None and not self._call(name):
                     return False, f"{name} unavailable"
-            return True, "python and git available"
+            return True, f"python={versions['python']}; git={versions['git']}"
 
         check("dependencies", deps)
+        def sandbox():
+            if not self.cfg.get("security", {}).get("sandbox_required"):
+                return True, "not required"
+            if self.seam("sandbox") is None:
+                return False, "sandbox seam unavailable"
+            return self._call("sandbox"), "sandbox seam"
+
+        check("sandbox", sandbox)
 
         def dataset():
             manifest = json.loads(
@@ -112,11 +126,17 @@ class Preflight:
             splits = manifest.get("splits", {})
             if not {"search_dev", "hidden_confirmation"} <= set(splits):
                 return False, "required splits missing"
-            dataset_path = manifest.get("dataset", {}).get("path")
+            dataset = manifest.get("dataset", {})
+            dataset_path = dataset.get("path")
+            dataset_sha256 = dataset.get("sha256")
             if dataset_path:
                 target = self.root / dataset_path
                 if not target.is_file():
                     return False, f"dataset missing: {dataset_path}"
+                if dataset_sha256:
+
+                    if sha256_file(target) != dataset_sha256:
+                        return False, f"dataset hash mismatch: {dataset_path}"
             return True, "manifest and splits verified"
 
         check("dataset", dataset)
@@ -158,11 +178,18 @@ class Preflight:
         check("model aliases", models)
         check("GJC smoke", lambda: (self._call("gjc"), "GJC seam"))
         design_ok = self._call("design")
-        checks.append(
-            PreflightCheck("design smoke", "passed" if design_ok else "failed", "design seam")
-        )
-        if not design_ok:
-            check("local figure fallback", lambda: (self._call("figure_fallback"), "fallback seam"))
+        if design_ok:
+            checks.append(PreflightCheck("design smoke", "passed", "design seam"))
+        elif self.seam("figure_fallback") is not None and self._call("figure_fallback"):
+            checks.append(
+                PreflightCheck(
+                    "design smoke",
+                    "passed",
+                    "design unavailable; local fallback verified",
+                )
+            )
+        else:
+            checks.append(PreflightCheck("design smoke", "failed", "design and fallback unavailable"))
         check(
             "venue compile",
             lambda: (

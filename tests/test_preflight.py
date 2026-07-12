@@ -1,5 +1,7 @@
+import hashlib
 import json
 import sqlite3
+import yaml
 
 import pytest
 from click.testing import CliRunner
@@ -7,7 +9,13 @@ from click.testing import CliRunner
 from ralph_core.cli import main
 from ralph_core.preflight import Preflight
 from ralph_core.schemas import Config
-from tests.fakes.fake_seams import FakeGJC, make_template_repo
+from tests.fakes.fake_seams import (
+    FakeDesign,
+    FakeFigureFallback,
+    FakeGJC,
+    FakeSandbox,
+    make_template_repo,
+)
 
 
 @pytest.mark.timeout(30)
@@ -27,6 +35,12 @@ def test_start_full_sequence_with_fake_seams_reaches_durable_ready(tmp_path, mon
         "core-v4.1-lean.sql",
         "worker-result.schema.json",
     }
+    assert runtime["tool_versions"]["python"].startswith("Python ")
+    assert runtime["tool_versions"]["git"].startswith("git version ")
+    assert runtime["dependency_lock_sha256"] == hashlib.sha256(
+        (root / "uv.lock").read_bytes()
+    ).hexdigest()
+    assert runtime["gjc_protocol"] is None
     expected = {
         "config.lock.yml",
         "RESEARCH_SPEC.md",
@@ -77,6 +91,73 @@ def test_wal_probe_check_in_report(tmp_path):
     report = Preflight(root, Config.load(root / "config.yml")).run()
     assert any(check.name == "WAL probe" and check.status == "passed" for check in report.checks)
 
+def test_sandbox_required_failure_blocks_start(tmp_path, monkeypatch):
+    root = make_template_repo(tmp_path)
+    FakeSandbox.ok = False
+    monkeypatch.chdir(root)
+    try:
+        result = CliRunner().invoke(main, ["start", "--yes"])
+    finally:
+        FakeSandbox.ok = True
+    assert result.exit_code == 3
+    assert "sandbox" in result.output
+
+
+def test_sandbox_not_required_passes(tmp_path):
+    root = make_template_repo(tmp_path)
+    config_path = root / "config.yml"
+    config = Config.load(config_path).data
+    config["security"]["sandbox_required"] = False
+
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    report = Preflight(root, Config.load(config_path)).run()
+    sandbox = next(check for check in report.checks if check.name == "sandbox")
+    assert sandbox.status == "passed"
+    assert sandbox.detail == "not required"
+
+
+def test_design_failure_with_fallback_passes_with_limitation(tmp_path):
+    root = make_template_repo(tmp_path)
+    FakeDesign.ok = False
+    try:
+        report = Preflight(root, Config.load(root / "config.yml")).run()
+    finally:
+        FakeDesign.ok = True
+    design = next(check for check in report.checks if check.name == "design smoke")
+    assert design.status == "passed"
+    assert design.detail == "design unavailable; local fallback verified"
+
+
+def test_design_and_fallback_failure_fails(tmp_path):
+    root = make_template_repo(tmp_path)
+    FakeDesign.ok = False
+    FakeFigureFallback.ok = False
+    try:
+        report = Preflight(root, Config.load(root / "config.yml")).run()
+    finally:
+        FakeDesign.ok = True
+        FakeFigureFallback.ok = True
+    design = next(check for check in report.checks if check.name == "design smoke")
+    assert design.status == "failed"
+    assert report.first_failure == "design smoke"
+
+
+def test_dataset_hash_mismatch_fails(tmp_path):
+    root = make_template_repo(tmp_path)
+    dataset_path = root / "data" / "dataset.bin"
+    dataset_path.write_bytes(b"dataset")
+    manifest_path = root / "data" / "data_manifest.lock.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["dataset"]["path"] = "data/dataset.bin"
+    manifest["dataset"]["sha256"] = "0" * 64
+    manifest_path.write_text(json.dumps(manifest))
+    report = Preflight(root, Config.load(root / "config.yml")).run()
+    dataset = next(check for check in report.checks if check.name == "dataset")
+    assert dataset.status == "failed"
+    assert dataset.detail == "dataset hash mismatch: data/dataset.bin"
+
+
+
 
 def test_preflight_check_order_matches_spec(tmp_path):
     root = make_template_repo(tmp_path)
@@ -85,6 +166,7 @@ def test_preflight_check_order_matches_spec(tmp_path):
         "config/spec schema",
         "repository state",
         "dependencies",
+        "sandbox",
         "dataset",
         "disk free",
         "WAL probe",

@@ -40,6 +40,10 @@ class FakeVenueCompile(_Switch):
 
 class FakeFigureFallback(_Switch):
     pass
+class FakeSandbox(_Switch):
+    pass
+
+
 
 
 def make_template_repo(tmp_path: Path) -> Path:
@@ -50,6 +54,7 @@ def make_template_repo(tmp_path: Path) -> Path:
         "ONE_LINER.md",
         "references.bib",
         "config.yml",
+        "uv.lock",
     ):
         shutil.copy2(root / name, tmp_path / name)
     for name in ("data", "statistics", "venue", "schema"):
@@ -62,6 +67,7 @@ def make_template_repo(tmp_path: Path) -> Path:
         "design": "tests.fakes.fake_seams.FakeDesign",
         "figure_fallback": "tests.fakes.fake_seams.FakeFigureFallback",
         "venue_compile": "tests.fakes.fake_seams.FakeVenueCompile",
+        "sandbox": "tests.fakes.fake_seams.FakeSandbox",
     }
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     subprocess.run(["git", "init", "-b", "main"], cwd=tmp_path, check=True, capture_output=True)

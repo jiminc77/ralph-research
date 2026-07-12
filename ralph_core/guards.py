@@ -1,4 +1,5 @@
 from __future__ import annotations
+import shlex
 
 from pathlib import Path
 
@@ -33,16 +34,29 @@ class PathGuard:
 
     def check_tool_call(self, tool, args):
         argv = [str(arg) for arg in args]
-        words = [arg for arg in argv if not arg.startswith("-")]
-        for index, word in enumerate(words):
-            if word != "git":
-                continue
-            for candidate in words[index + 1 :]:
-                if "/" in candidate or candidate.startswith(".") or "=" in candidate:
+
+        def contains_git_push(tokens):
+            words = [token for token in tokens if not token.startswith("-")]
+            for index, word in enumerate(words):
+                if word != "git":
                     continue
-                if candidate == "push":
-                    raise CommandDenied("git push denied")
-                break
+                for candidate in words[index + 1 :]:
+                    if "/" in candidate or candidate.startswith(".") or "=" in candidate:
+                        continue
+                    if candidate == "push":
+                        return True
+                    break
+            return False
+
+        token_groups = [argv]
+        for arg in argv:
+            if any(character.isspace() for character in arg):
+                try:
+                    token_groups.append(shlex.split(arg, posix=True))
+                except ValueError:
+                    token_groups.append(arg.split())
+        if any(contains_git_push(tokens) for tokens in token_groups):
+            raise CommandDenied("git push denied")
         for arg in argv:
             if "/" in arg or arg.startswith("."):
                 if not self.check_path(arg):

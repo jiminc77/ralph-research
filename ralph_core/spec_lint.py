@@ -40,6 +40,10 @@ def _nested(data: dict[str, Any], *keys: str) -> Any:
             return None
         data = data.get(key)
     return data
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
 
 
 def _venue_check(root: Path, config: dict[str, Any]) -> list[str]:
@@ -66,9 +70,19 @@ def spec_lint(repo_root: str | Path, config: Any) -> list[LintFinding]:
     metrics = spec.get("metrics", {})
     if not _nested(spec, "baseline", "command"):
         findings.append(LintFinding(1, "baseline.command required"))
-    if not metrics.get("primary") or not metrics.get("direction"):
+    if (
+        not metrics.get("primary")
+        or metrics.get("direction") not in {"maximize", "minimize"}
+    ):
         findings.append(LintFinding(2, "metrics.primary and direction required"))
-    if metrics.get("minimum_effect") is None or not metrics.get("guards"):
+    guards = metrics.get("guards")
+    valid_guards = isinstance(guards, list) and bool(guards) and all(
+        isinstance(guard, dict)
+        and _is_number(guard.get("threshold"))
+        and guard.get("operator") in {"gte", "lte"}
+        for guard in guards
+    )
+    if not _is_number(metrics.get("minimum_effect")) or not valid_guards:
         findings.append(LintFinding(3, "minimum_effect and guard threshold required"))
     try:
         manifest = json.loads((root / cfg["paths"]["data_manifest"]).read_text())
@@ -87,14 +101,24 @@ def spec_lint(repo_root: str | Path, config: Any) -> list[LintFinding]:
     exception = candidates.get("exception") or candidates.get("exception_flag")
     valid_range = (
         isinstance(candidates.get("min"), int)
-        and candidates["min"] >= 2
+        and not isinstance(candidates["min"], bool)
+        and 2 <= candidates["min"] <= 4
         and isinstance(candidates.get("max"), int)
-        and candidates["max"] <= 4
+        and not isinstance(candidates["max"], bool)
+        and 2 <= candidates["max"] <= 4
+        and candidates["min"] <= candidates["max"]
     )
     if not exception and not valid_range:
         findings.append(LintFinding(6, "candidates must be 2..4 or explicitly excepted"))
     budget = _nested(cfg, "run", "defaults", "budget") or {}
-    if not all(key in budget for key in ("wall_clock_hours", "cost_cap_usd", "gpu_hour_cap")):
+    valid_budget = (
+        all(key in budget for key in ("wall_clock_hours", "cost_cap_usd", "gpu_hour_cap"))
+        and _is_number(budget.get("wall_clock_hours"))
+        and budget["wall_clock_hours"] > 0
+        and _is_number(budget.get("cost_cap_usd"))
+        and (budget.get("gpu_hour_cap") is None or _is_number(budget.get("gpu_hour_cap")))
+    )
+    if not valid_budget:
         findings.append(LintFinding(7, "wall-clock, cost, and compute caps required"))
     try:
         policy = (root / "DECISION_POLICY.md").read_text(encoding="utf-8").lower()

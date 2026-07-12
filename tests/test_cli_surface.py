@@ -1,6 +1,7 @@
 import hashlib
 import json
 import sqlite3
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,18 @@ from click.testing import CliRunner
 
 from ralph_core.cli import main
 from tests.fakes.fake_seams import make_template_repo
+def test_launcher_executes_cli():
+    root = Path(__file__).parents[1]
+    result = subprocess.run(
+        ["./ralph", "--help"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "start" in result.stdout
+
 
 
 def _seed_run(root: Path, status: str, run_id: str = "run-seeded") -> Path:

@@ -13,6 +13,7 @@ from uuid import uuid4
 from .schemas import (
     CONTROL_VERB_ALLOWED_STATES,
     DispatchOutcome,
+    EXIT_CODES,
     WorkerResultError,
     canonical_json,
     sha256_file,
@@ -63,7 +64,17 @@ class Supervisor:
         handle.flush()
         self.lock_file = handle
 
+    def assume_lock_held(self) -> None:
+        """Record the caller's explicit assertion that it owns the active lock."""
+        self.lock_file = True
+
+    def _require_lock(self) -> None:
+        if self.lock_file is None:
+            raise RuntimeError("active lock must be held")
+
+
     def start(self) -> None:
+        self._require_lock()
         run = self.store.get_run(self.run_id)
         if run["status"] != "ready":
             raise RuntimeError("run is not ready")
@@ -115,6 +126,15 @@ class Supervisor:
         if attempt < task["attempt"]:
             self.event("ingest_rejected", {"reason": "stale_attempt"}, task_id)
             return False
+        if outcome.task_id != task_id:
+            self.event("ingest_failed", {"reason": "outcome task mismatch"}, task_id)
+            return False
+        if outcome.attempt != attempt:
+            self.event("ingest_failed", {"reason": "outcome attempt mismatch"}, task_id)
+            return False
+        if not outcome.agent_end_observed:
+            self.event("ingest_failed", {"reason": "agent end not observed"}, task_id)
+            return False
         task_dir = self.run_dir / "tasks" / task_id
         result_file = (task_dir / (outcome.result_path or "result.json")).resolve()
         try:
@@ -134,6 +154,16 @@ class Supervisor:
             validate_worker_result(result)
             if result["task_id"] != task_id:
                 raise WorkerResultError("task mismatch")
+            if result["status"] == "failed":
+                self.store.set_task_status(
+                    task_id, "failed", error_code="worker_reported_failure"
+                )
+                self.event("worker_reported_failure", {}, task_id)
+                return False
+            if result["status"] == "blocked":
+                self.store.set_task_status(task_id, "blocked")
+                self.event("worker_reported_blocked", {}, task_id)
+                return False
             artifacts = []
             for artifact in result["artifacts"]:
                 file_path = (task_dir / artifact["path"]).resolve()
@@ -209,6 +239,7 @@ class Supervisor:
         return True
 
     def run_once(self) -> None:
+        self._require_lock()
         self.start()
         tasks = self.store.conn.execute(
             "SELECT * FROM tasks WHERE run_id=? AND status='queued'", (self.run_id,)
@@ -234,8 +265,12 @@ def main() -> None:
         module, name = dotted.rsplit(".", 1)
         worker = getattr(importlib.import_module(module), name)
     supervisor = Supervisor(run_dir, worker)
-    supervisor.acquire_lock()
-    supervisor.run_once()
+    try:
+        supervisor.acquire_lock()
+        supervisor.run_once()
+    except ActiveLockError:
+        print("another supervisor holds the active lock", file=sys.stderr)
+        sys.exit(EXIT_CODES["active_lock"])
 
 
 if __name__ == "__main__":

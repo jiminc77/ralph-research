@@ -44,6 +44,7 @@ def recover(run_dir, store, worker_runner=None) -> RecoveryReport:
     supervisor = Supervisor(run_dir, worker_runner)
     supervisor.store.close()
     supervisor.store = store
+    supervisor.assume_lock_held()
     interrupted_tasks = store.conn.execute(
         "SELECT * FROM tasks WHERE run_id=? AND status='interrupted'", (run_id,)
     ).fetchall()

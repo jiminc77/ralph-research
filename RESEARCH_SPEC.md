@@ -19,7 +19,7 @@ metrics:
   minimum_effect: 0.05
   guards:
     - name: "runtime_hours"
-      operator: "<="
+      operator: lte
       threshold: 8
 candidates:
   min: 2

@@ -7,6 +7,7 @@ import os
 import secrets
 import shutil
 import sqlite3
+import subprocess
 from pathlib import Path
 
 import click
@@ -147,6 +148,13 @@ def start(yes, config, name):
         for relative in inputs
         if (root / relative).is_file()
     }
+    tool_versions = {}
+    for name, command in (
+        ("python", ["python", "--version"]),
+        ("git", ["git", "--version"]),
+    ):
+        completed = subprocess.run(command, check=True, capture_output=True, text=True)
+        tool_versions[name] = (completed.stdout or completed.stderr).strip()
     runtime = {
         "run_id": run_id,
         "created_at": _now(),
@@ -156,6 +164,9 @@ def start(yes, config, name):
             "worker-result.schema.json": sha256_file(schema.parent / "worker-result.schema.json"),
         },
         "immutable_inputs": immutable,
+        "tool_versions": tool_versions,
+        "dependency_lock_sha256": sha256_file(root / "uv.lock"),
+        "gjc_protocol": cfg.data.get("gjc_protocol"),
     }
     (run / "runtime.lock.json").write_text(
         json.dumps(runtime, sort_keys=True), encoding="utf-8"
@@ -227,3 +238,5 @@ def logs(config, run_id, task):
     with _readonly_db(run / "state.db") as db:
         for row in db.execute(sql, (task,) if task else ()):
             click.echo(" | ".join(str(value) for value in row))
+if __name__ == "__main__":
+    main()

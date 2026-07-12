@@ -18,6 +18,11 @@ milestone noted. The spec remains
 | Reviewer ensemble R1/R2/R3, grading, output packaging | M7 | Reviewer alias resolution (`claude-opus-4-8` exact-match, exit 3 otherwise) already enforced in preflight. |
 | Acceptance manifest, `@pytest.mark.acceptance` lifecycle plugin, DoD container (`ci/Dockerfile.dod`, uv 0.7.13 pin), e2e positive/null runs, `scripts/check_acceptance.py` | M8 | Current suite is hermetic module tests only; the 32-test acceptance matrix is not yet mapped. |
 | Live-service smokes as real calls (provider, GJC, Claude Design, TeX, Chromium) | M3/M5/M6/M8 | Preflight executes these checks through adapter seams; hermetic tests use `tests/fakes/*`. Real runs will fail preflight (exit 3) until M3+ adapters exist — by design. |
+| Scheduler and budget admission caps (`scheduler.py`, `budget.py`; acceptance test 7) | M2 depth | Admission-cap enforcement is deferred. |
+| Ingest git-commit existence/clean verification and authoritative `runs/<id>/artifacts` store materialization | M2/M3 | Ingest validation and artifact-store authority remain deferred. |
+| Recovery worktree and partial-artifact cleanup beyond `*.tmp` | M3 | Lean baseline only removes temporary files. |
+| Tamper-evident `runtime.lock.json` signing | Hardening | Out of the lean baseline. |
+| Runtime lock design-handoff status and template-archive hash fields | M6 | Extended runtime lock metadata is deferred. |
 
 ## Documented deviations from the plan (fast-track)
 

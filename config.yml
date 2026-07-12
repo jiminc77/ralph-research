@@ -27,3 +27,8 @@ adapters:
   gjc: ralph_core.adapters.gjc_rpc.GJCAdapter
   design: ralph_core.roles.figure.ClaudeDesignClient
   sandbox: ralph_core.adapters.agent_sdk.SandboxProbe
+  catalog: ralph_core.adapters.agent_sdk.ProviderCatalog
+  venue_compile: venue.check.check_profile
+  figure_fallback: ralph_core.roles.figure.LocalFigureFallback
+  latex: ralph_core.paper.latex.LatexProbe
+  chromium: ralph_core.paper.figures.ChromiumProbe

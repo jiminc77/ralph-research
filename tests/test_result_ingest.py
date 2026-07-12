@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -124,3 +125,67 @@ def test_experiments_and_metrics_recorded(tmp_path):
     metrics = {row["name"]: row for row in store.conn.execute("SELECT * FROM metrics")}
     assert metrics["primary"]["is_primary"] == 1 and metrics["primary"]["value"] == 0.72
     assert metrics["latency"]["is_primary"] == 0 and metrics["latency"]["value"] == 1.2
+
+
+def test_failed_status_result_marks_task_failed(tmp_path):
+    run, store = seeded(tmp_path)
+    task = store.get_task("t")
+    outcome = valid(task, run / "tasks" / "t")
+    path = run / "tasks" / "t" / "result.json"
+    result = json.loads(path.read_text())
+    result["status"] = "failed"
+    path.write_text(json.dumps(result))
+
+    assert not Supervisor(run).ingest_result("t", 0, outcome)
+    task = store.get_task("t")
+    assert (task["status"], task["error_code"]) == ("failed", "worker_reported_failure")
+    assert "worker_reported_failure" in events(store, "t")
+    assert store.conn.execute("SELECT count(*) FROM artifacts").fetchone()[0] == 0
+    assert store.get_task("t")["result_json"] is None
+
+
+def test_blocked_status_result_marks_task_blocked(tmp_path):
+    run, store = seeded(tmp_path)
+    task = store.get_task("t")
+    outcome = valid(task, run / "tasks" / "t")
+    path = run / "tasks" / "t" / "result.json"
+    result = json.loads(path.read_text())
+    result["status"] = "blocked"
+    path.write_text(json.dumps(result))
+
+    assert not Supervisor(run).ingest_result("t", 0, outcome)
+    assert store.get_task("t")["status"] == "blocked"
+    assert "worker_reported_blocked" in events(store, "t")
+    assert store.conn.execute("SELECT count(*) FROM artifacts").fetchone()[0] == 0
+    assert store.get_task("t")["result_json"] is None
+
+
+@pytest.mark.parametrize(
+    "outcome_change",
+    [
+        lambda outcome: replace(outcome, task_id="other"),
+        lambda outcome: replace(outcome, attempt=1),
+    ],
+)
+def test_outcome_task_or_attempt_mismatch_rejected(tmp_path, outcome_change):
+    run, store = seeded(tmp_path)
+    task = store.get_task("t")
+    outcome = outcome_change(valid(task, run / "tasks" / "t"))
+
+    assert not Supervisor(run).ingest_result("t", 0, outcome)
+    assert store.get_task("t")["status"] != "completed"
+    assert "ingest_failed" in events(store, "t")
+
+
+def test_no_agent_end_not_completed(tmp_path):
+    run, store = seeded(tmp_path)
+    task = store.get_task("t")
+    outcome = replace(
+        valid(task, run / "tasks" / "t"),
+        prompt_ack_observed=True,
+        agent_end_observed=False,
+    )
+
+    assert not Supervisor(run).ingest_result("t", 0, outcome)
+    assert store.get_task("t")["status"] != "completed"
+    assert "ingest_failed" in events(store, "t")

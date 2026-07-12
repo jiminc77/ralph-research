@@ -15,6 +15,13 @@ def test_denylisted_env_absent(monkeypatch):
 def test_explicit_secret_name_raises():
     with pytest.raises(EnvLeakError):
         build_env("x", {"DEPLOY_SECRET": "x"}, {})
+@pytest.mark.parametrize(
+    "name",
+    ["GOOGLE_APPLICATION_CREDENTIALS", "SSH_AUTH_SOCK", "KUBECONFIG"],
+)
+def test_credential_file_env_names_rejected(name):
+    with pytest.raises(EnvLeakError):
+        build_env("x", {name: "credential"}, {})
 
 
 def test_redact_masks_long_values():
