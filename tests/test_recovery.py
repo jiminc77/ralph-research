@@ -68,6 +68,31 @@ def test_recover_uses_caller_held_lock(tmp_path):
         supervisor.lock_file.close()
 
 
+def test_recover_rejects_unlocked_supplied_supervisor(tmp_path):
+    run, store = seeded(tmp_path)
+    store.set_run_status("r", "running")
+    store.set_task_status("t", "running")
+    unlocked = Supervisor(run)
+    with pytest.raises(RuntimeError, match="must hold the active lock"):
+        recover(run, store, supervisor=unlocked)
+    assert store.get_task("t")["status"] == "running"
+
+
+def test_recover_rejects_mismatched_supplied_supervisor(tmp_path):
+    run, store = seeded(tmp_path)
+    store.set_run_status("r", "running")
+    store.set_task_status("t", "running")
+    other_run = tmp_path / "runs" / "other"
+    other_run.mkdir(parents=True)
+    mismatched = Supervisor(other_run)
+    mismatched.acquire_lock()
+    try:
+        with pytest.raises(RuntimeError, match="does not match run_dir"):
+            recover(run, store, supervisor=mismatched)
+        assert store.get_task("t")["status"] == "running"
+    finally:
+        mismatched.lock_file.close()
+
 def test_worker_terminal_result_is_not_requeued(tmp_path):
     run, store = seeded(tmp_path)
     store.set_run_status("r", "running")

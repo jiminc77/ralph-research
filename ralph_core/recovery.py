@@ -29,6 +29,11 @@ def recover(run_dir, store, worker_runner=None, supervisor=None) -> RecoveryRepo
         supervisor.store.close()
         supervisor.store = store
         supervisor.acquire_lock()
+    else:
+        if supervisor.lock_file is None:
+            raise RuntimeError("supplied supervisor must hold the active lock")
+        if Path(supervisor.run_dir) != run_dir:
+            raise RuntimeError("supplied supervisor does not match run_dir")
 
     try:
         run = store.get_run(run_id)
