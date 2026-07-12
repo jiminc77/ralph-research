@@ -1,6 +1,7 @@
 import hashlib
 import json
 import sqlite3
+import subprocess
 import yaml
 
 import pytest
@@ -40,7 +41,7 @@ def test_start_full_sequence_with_fake_seams_reaches_durable_ready(tmp_path, mon
     assert runtime["dependency_lock_sha256"] == hashlib.sha256(
         (root / "uv.lock").read_bytes()
     ).hexdigest()
-    assert runtime["gjc_protocol"] is None
+    assert runtime["gjc_protocol"] == 2
     expected = {
         "config.lock.yml",
         "RESEARCH_SPEC.md",
@@ -99,6 +100,25 @@ def test_sandbox_required_failure_blocks_start(tmp_path, monkeypatch):
         result = CliRunner().invoke(main, ["start", "--yes"])
     finally:
         FakeSandbox.ok = True
+    assert result.exit_code == 3
+    assert "sandbox" in result.output
+
+
+def test_unsandboxed_fallback_blocks_start(tmp_path, monkeypatch):
+    root = make_template_repo(tmp_path)
+    config_path = root / "config.yml"
+    config = Config.load(config_path).data
+    config["security"]["allow_unsandboxed"] = True
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    subprocess.run(["git", "add", "config.yml"], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-m", "allow unsandboxed"], cwd=root, check=True)
+    report = Preflight(root, Config.load(config_path)).run()
+    sandbox = next(check for check in report.checks if check.name == "sandbox")
+    assert sandbox.detail == "unsandboxed fallback denied"
+    monkeypatch.chdir(root)
+
+    result = CliRunner().invoke(main, ["start", "--yes"])
+
     assert result.exit_code == 3
     assert "sandbox" in result.output
 

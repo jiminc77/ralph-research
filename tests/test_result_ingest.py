@@ -91,6 +91,15 @@ def test_stale_attempt_rejected(tmp_path):
     assert "ingest_rejected" in events(store, "t")
 
 
+def test_future_attempt_rejected(tmp_path):
+    run, store = seeded(tmp_path)
+    task = store.get_task("t")
+    outcome = replace(valid(task, run / "tasks" / "t"), attempt=task["attempt"] + 1)
+
+    assert not Supervisor(run).ingest_result("t", task["attempt"] + 1, outcome)
+    assert "ingest_rejected" in events(store, "t")
+
+
 def test_artifact_hash_mismatch_not_completed(tmp_path):
     run, store = seeded(tmp_path)
     task = store.get_task("t")

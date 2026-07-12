@@ -111,7 +111,10 @@ class Preflight:
 
         check("dependencies", deps)
         def sandbox():
-            if not self.cfg.get("security", {}).get("sandbox_required"):
+            security = self.cfg.get("security", {})
+            if security.get("allow_unsandboxed") or security.get("allow_unsandboxed_commands"):
+                return False, "unsandboxed fallback denied"
+            if not security.get("sandbox_required"):
                 return True, "not required"
             if self.seam("sandbox") is None:
                 return False, "sandbox seam unavailable"

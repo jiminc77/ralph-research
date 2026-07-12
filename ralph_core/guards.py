@@ -36,25 +36,35 @@ class PathGuard:
         argv = [str(arg) for arg in args]
 
         def contains_git_push(tokens):
-            words = [token for token in tokens if not token.startswith("-")]
-            for index, word in enumerate(words):
-                if word != "git":
+            value_options = {"-C", "-c", "--git-dir", "--work-tree", "--exec-path"}
+            index = 0
+            while index < len(tokens):
+                if tokens[index] != "git":
+                    index += 1
                     continue
-                for candidate in words[index + 1 :]:
-                    if "/" in candidate or candidate.startswith(".") or "=" in candidate:
-                        continue
-                    if candidate == "push":
-                        return True
-                    break
+                index += 1
+                while index < len(tokens) and tokens[index].startswith("-"):
+                    option = tokens[index]
+                    index += 2 if option in value_options else 1
+                if index < len(tokens) and tokens[index] == "push":
+                    return True
             return False
 
-        token_groups = [argv]
+        def split_separators(tokens):
+            groups = []
+            for token in tokens:
+                normalized = token.replace("&&", " ").replace("||", " ")
+                normalized = normalized.replace(";", " ").replace("|", " ")
+                groups.extend(normalized.split())
+            return groups
+
+        token_groups = [split_separators(argv)]
         for arg in argv:
             if any(character.isspace() for character in arg):
                 try:
-                    token_groups.append(shlex.split(arg, posix=True))
+                    token_groups.append(split_separators(shlex.split(arg, posix=True)))
                 except ValueError:
-                    token_groups.append(arg.split())
+                    token_groups.append(split_separators(arg.split()))
         if any(contains_git_push(tokens) for tokens in token_groups):
             raise CommandDenied("git push denied")
         for arg in argv:

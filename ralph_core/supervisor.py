@@ -123,8 +123,8 @@ class Supervisor:
 
     def ingest_result(self, task_id, attempt, outcome) -> bool:
         task = self.store.get_task(task_id)
-        if attempt < task["attempt"]:
-            self.event("ingest_rejected", {"reason": "stale_attempt"}, task_id)
+        if attempt != task["attempt"]:
+            self.event("ingest_rejected", {"reason": "attempt_mismatch"}, task_id)
             return False
         if outcome.task_id != task_id:
             self.event("ingest_failed", {"reason": "outcome task mismatch"}, task_id)

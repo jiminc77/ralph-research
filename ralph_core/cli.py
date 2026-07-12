@@ -166,7 +166,7 @@ def start(yes, config, name):
         "immutable_inputs": immutable,
         "tool_versions": tool_versions,
         "dependency_lock_sha256": sha256_file(root / "uv.lock"),
-        "gjc_protocol": cfg.data.get("gjc_protocol"),
+        "gjc_protocol": int(cfg.data["gjc"]["protocol_major"]),
     }
     (run / "runtime.lock.json").write_text(
         json.dumps(runtime, sort_keys=True), encoding="utf-8"

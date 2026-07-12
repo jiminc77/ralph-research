@@ -1,4 +1,6 @@
 schema_version: "4.1"
+gjc:
+  protocol_major: 2
 run:
   name: default
   defaults:
