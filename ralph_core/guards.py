@@ -38,7 +38,7 @@ class PathGuard:
             if word != "git":
                 continue
             for candidate in words[index + 1 :]:
-                if "/" in candidate or candidate.startswith("."):
+                if "/" in candidate or candidate.startswith(".") or "=" in candidate:
                     continue
                 if candidate == "push":
                     raise CommandDenied("git push denied")

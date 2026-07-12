@@ -52,12 +52,13 @@ def recover(run_dir, store, worker_runner=None) -> RecoveryReport:
         task_dir = run_dir / "tasks" / task["task_id"]
         outcome_path = task_dir / f"attempt-{task['attempt']}.outcome.json"
         ingested = False
-        if (task_dir / "result.json").exists() and outcome_path.is_file():
+        if outcome_path.is_file():
             try:
                 outcome = DispatchOutcome.from_dict(json.loads(outcome_path.read_text()))
-                ingested = supervisor.ingest_result(task["task_id"], task["attempt"], outcome)
             except (OSError, ValueError, TypeError, json.JSONDecodeError):
-                ingested = False
+                outcome = None
+            if outcome and (task_dir / (outcome.result_path or "result.json")).is_file():
+                ingested = supervisor.ingest_result(task["task_id"], task["attempt"], outcome)
         if ingested:
             report.completed += 1
         elif task["attempt"] + 1 <= task["max_attempts"]:
